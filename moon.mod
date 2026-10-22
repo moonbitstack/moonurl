@@ -23,6 +23,6 @@ description = "URI references as RFC 3986 defines them: parsing, recomposing, re
 preferred_target = "wasm-gc"
 
 import {
-  "moonbitstack/moonmime@0.1.0",
+  "moonbitstack/moonmime@0.2.0",
   "moonbitstack/moonbase@0.4.0",
 }
