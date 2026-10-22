@@ -1,0 +1,17 @@
+// URI references, RFC 3986:
+// https://www.rfc-editor.org/rfc/rfc3986
+//
+// Taking one apart, putting it back, resolving a relative one against a base,
+// and the percent coding that lets any octet travel inside one. A form body, a
+// request target, a `Location` and a data URL all obey this grammar.
+//
+// Percent coding takes the component as a parameter. Which octets may stand for
+// themselves is RFC 3986's answer; three callers writing that list by hand is
+// three chances to get it wrong.
+//
+// Not here: internationalised host names (RFC 3492), and what belongs to the
+// WHATWG URL Standard rather than to RFC 3986 — special schemes, default ports,
+// Windows drive letters.
+import {
+  "moonbitlang/core/encoding/utf8",
+}

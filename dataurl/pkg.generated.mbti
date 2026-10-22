@@ -1,0 +1,37 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonurl/dataurl"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub let kind : String
+
+// Errors
+pub(all) suberror Refused {
+  Scheme
+  Comma
+  Escape(at~ : Int32)
+  Base64(at~ : Int32)
+} derive(Eq, @debug.Debug)
+pub fn Refused::equal(Self, Self) -> Bool
+pub fn Refused::not_equal(Self, Self) -> Bool
+pub fn Refused::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+pub(all) struct Url {
+  kind : String
+  data : Bytes
+} derive(Eq, @debug.Debug)
+pub fn Url::charset(Self) -> String
+pub fn Url::decode(StringView, strict? : Bool) -> Self raise Refused
+pub fn Url::encode(Self, base64? : Bool) -> String
+pub fn Url::equal(Self, Self) -> Bool
+pub fn Url::new(Bytes, kind? : String) -> Self
+pub fn Url::not_equal(Self, Self) -> Bool
+pub fn Url::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

@@ -1,0 +1,7 @@
+// A representation written inside the reference to it: `moon run examples/data`.
+pkgtype(kind: "executable")
+
+import {
+  "moonbitstack/moonurl/dataurl",
+  "moonbitlang/core/encoding/utf8",
+}

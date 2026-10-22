@@ -1,0 +1,21 @@
+// Data URLs, RFC 2397:
+// https://www.rfc-editor.org/rfc/rfc2397
+//
+// A whole representation written inside the reference to it: the media type,
+// how the octets are spelled, and the octets. An inline image, a generated
+// download, a favicon that costs no second request.
+//
+// The percent coding is moonurl's. A data URL's payload obeys the same rule a
+// request target does, and two spellings of one rule drift apart.
+import {
+  "moonbitstack/moonmime",
+  "moonbitstack/moonurl",
+  "moonbitstack/moonbase/base64",
+  "moonbitstack/moonbase",
+  "moonbitlang/core/encoding/utf8",
+}
+
+import {
+  "moonbitstack/moonurl/dataurl",
+  "moonbitlang/core/encoding/utf8",
+} for "test"

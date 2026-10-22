@@ -1,58 +1,24 @@
-# CHANGE-ME
+# moonurl
 
-One sentence saying what this is.
+URI references for MoonBit, as RFC 3986 defines them: taking one apart, putting it back, resolving a relative one against a base, normalising, and percent coding by component. Data URLs ride on top. No sockets.
 
 ```moonbit
-@lib.greet("moonbit")
+let base = @moonurl.Url::decode("http://a/b/c/d;p?q")
+base.resolve(@moonurl.Url::decode("../g")).encode() // "http://a/b/g"
+@moonurl.escape_text("a b&c/d", kind=Query)         // "a%20b&c/d"
+@dataurl.Url::decode("data:,A%20brief%20note").data // b"A brief note"
 ```
 
-Run `moon run examples/tour` for the whole surface in one go.
+`moon run examples/tour` takes a reference apart, resolves the RFC 3986 §5.4 examples and escapes one string for four components; `moon run examples/data` reads the four examples RFC 2397 prints.
 
-## Starting from this template
+## Packages
 
-1. `gh repo create moonbitstack/<name> --template moonbitstack/moonkit --public`
-2. Replace `CHANGE-ME` everywhere: `moon.mod` (name and repository), the two
-   `moon.pkg` files that import `lib`, and this file's title.
-3. Delete `bin/` if the repository ships no binary; delete `lib/` if it ships
-   only a binary. Most repositories here keep `lib/` and rename it to whatever
-   the package actually is — `base64/`, `sha2/`, `jwt/` — because a package is
-   named after what it does, not after its role.
-4. Fill in `keywords` and `description` in `moon.mod`. The description is what
-   mooncakes shows, so it says what the package is and what it is not.
-5. Write the specification link into every `moon.pkg`.
+|  Package  | What | Specification |
+|:--:|:--|:--|
+| `moonurl` | URI references: parsing, recomposing, resolving, normalising, percent coding by component | RFC 3986 |
+| `moonurl/dataurl` | A whole representation written inside the reference to it | RFC 2397 |
 
-## What is here and what is not
-
-| Carried | Why |
-|:--|:--|
-| `.github/workflows/` | GitHub does not inherit workflows; every repository needs its own copy |
-| `moon.mod`, `lib/`, `bin/`, `examples/tour/` | The module layout, with the library and the binary separated the way cargo separates them |
-| `.gitignore`, `.moonignore` | The second one exists because `.gitignore`'s `!.git*` would otherwise pull the whole object database into a published tarball |
-| `LICENSE` | Apache-2.0, the same across the organisation |
-
-**Issue and pull-request templates are not here.** The organisation's `.github`
-repository supplies them to every repository that has none of its own; a copy
-here would shadow that one and then drift from it. A repository adds its own
-only when it needs something the organisation's does not cover.
-
-## The gate
-
-Every commit passes this, with each exit code seen to be zero:
-
-```bash
-moon clean && moon fmt && moon check --target all --deny-warn \
-  && moon build --target all && moon test --target all
-```
-
-Before a release, `moon info --target all && git diff --exit-code` as well: the
-generated interface is checked in, and a difference means the interface moved
-without anyone saying so.
-
-## Releasing
-
-Push a signed tag `v<version>`. `release.yml` runs the tests first and publishes
-only if they pass and the organisation variable `MOONCAKES_PUBLISH` is `true`.
-The major version stays at 0.
+Not here: internationalised host names (RFC 3492), and what belongs to the WHATWG URL Standard rather than to RFC 3986 — special schemes, default ports, Windows drive letters.
 
 ## Licence
 

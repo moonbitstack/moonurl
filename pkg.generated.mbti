@@ -1,0 +1,71 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonurl"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn escape(BytesView, kind? : Kind, spare? : StringView) -> String
+
+pub fn escape_text(StringView, kind? : Kind, spare? : StringView) -> String
+
+pub fn escaped(StringView, kind? : Kind, spare? : StringView) -> Bool
+
+pub let kind : Kind
+
+pub fn normalize_escapes(StringView) -> String
+
+pub fn remove_dots(String) -> String
+
+pub fn unescape(BytesView) -> Bytes
+
+pub fn unescape_text(StringView) -> String
+
+// Errors
+pub(all) suberror Refused {
+  Port(at~ : Int32)
+  Host(at~ : Int32)
+} derive(Eq, @debug.Debug)
+pub fn Refused::equal(Self, Self) -> Bool
+pub fn Refused::not_equal(Self, Self) -> Bool
+pub fn Refused::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+pub(all) enum Kind {
+  Bare
+  Host
+  Userinfo
+  Segment
+  Path
+  Query
+  Fragment
+  Whole
+} derive(Eq, @debug.Debug)
+pub fn Kind::equal(Self, Self) -> Bool
+pub fn Kind::not_equal(Self, Self) -> Bool
+pub fn Kind::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Url {
+  scheme : String?
+  userinfo : String?
+  host : String?
+  port : Int32?
+  path : String
+  query : String?
+  fragment : String?
+} derive(Eq, @debug.Debug)
+pub fn Url::authority(Self) -> String?
+pub fn Url::decode(StringView) -> Self raise Refused
+pub fn Url::encode(Self) -> String
+pub fn Url::equal(Self, Self) -> Bool
+pub fn Url::is_absolute(Self) -> Bool
+pub fn Url::new(scheme? : String, userinfo? : String, host? : String, port? : Int32, path? : String, query? : String, fragment? : String) -> Self
+pub fn Url::normalize(Self) -> Self
+pub fn Url::not_equal(Self, Self) -> Bool
+pub fn Url::resolve(Self, Self) -> Self
+pub fn Url::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

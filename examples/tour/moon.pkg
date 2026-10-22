@@ -1,6 +1,6 @@
-// Everything this repository does, in one run: `moon run examples/tour`.
+// A URI reference taken apart, resolved and escaped: `moon run examples/tour`.
 pkgtype(kind: "executable")
 
 import {
-  "moonbitstack/CHANGE-ME/lib",
+  "moonbitstack/moonurl",
 }
