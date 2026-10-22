@@ -43,6 +43,14 @@ fn main raise {
   let messy = @moonurl.Url::decode("HTTP://EXAMPLE.test/a/./b/../c/%7euser")
   println("messy     " + messy.encode())
   println("normal    " + messy.normalize().encode())
+  println("")
+
+  // A query as pairs: `+` is a space only here, and a repeated name is a list.
+  let query = @moonurl.Query::decode(b"q=two+words&tag=a&tag=b"[:])
+  println("q         " + show(query.get("q")))
+  println("tags      " + query.values("tag").join(", "))
+  query.set("page", "2")
+  println("written   " + query.encode())
 }
 
 ///|

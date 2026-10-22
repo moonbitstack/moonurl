@@ -1,6 +1,6 @@
 name = "moonbitstack/moonurl"
 
-version = "0.1.0"
+version = "0.2.0"
 
 readme = "README.md"
 
@@ -14,10 +14,11 @@ keywords = [
   "rfc3986",
   "percent-encoding",
   "data-url",
+  "urlencoded",
   "moonbit",
 ]
 
-description = "URI references as RFC 3986 defines them: parsing, recomposing, resolving and percent coding by component, and data URLs. No sockets."
+description = "URI references as RFC 3986 defines them: parsing, recomposing, resolving and percent coding by component, form encoding, and data URLs. No sockets."
 
 preferred_target = "wasm-gc"
 

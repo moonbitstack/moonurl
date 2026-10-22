@@ -75,6 +75,10 @@ pub(all) suberror Refused {
   Port(at~ : Int32)
   /// An IP-literal with no closing bracket, at the opening one's offset.
   Host(at~ : Int32)
+  /// A form-encoded string with more pairs than the limit.
+  Pairs(limit~ : Int32)
+  /// One form-encoded pair longer than the limit, in octets.
+  Pair(limit~ : Int32, got~ : Int32)
 } derive(Eq, Debug)
 
 ///|

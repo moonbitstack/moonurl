@@ -14,6 +14,8 @@ pub fn escaped(StringView, kind? : Kind, spare? : StringView) -> Bool
 
 pub let kind : Kind
 
+pub let limits : Limits
+
 pub fn normalize_escapes(StringView) -> String
 
 pub fn remove_dots(String) -> String
@@ -26,6 +28,8 @@ pub fn unescape_text(StringView) -> String
 pub(all) suberror Refused {
   Port(at~ : Int32)
   Host(at~ : Int32)
+  Pairs(limit~ : Int32)
+  Pair(limit~ : Int32, got~ : Int32)
 } derive(Eq, @debug.Debug)
 pub fn Refused::equal(Self, Self) -> Bool
 pub fn Refused::not_equal(Self, Self) -> Bool
@@ -45,6 +49,32 @@ pub(all) enum Kind {
 pub fn Kind::equal(Self, Self) -> Bool
 pub fn Kind::not_equal(Self, Self) -> Bool
 pub fn Kind::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Limits {
+  pairs : Int32
+  size : Int32
+} derive(Eq, @debug.Debug)
+pub fn Limits::equal(Self, Self) -> Bool
+pub fn Limits::new(pairs? : Int32, size? : Int32) -> Self
+pub fn Limits::not_equal(Self, Self) -> Bool
+pub fn Limits::to_repr(Self) -> @debug.Repr
+
+pub struct Query {
+  // private fields
+} derive(Eq, @debug.Debug)
+pub fn Query::add(Self, String, String) -> Unit
+pub fn Query::decode(BytesView, limits? : Limits) -> Self raise Refused
+pub fn Query::encode(Self) -> String
+pub fn Query::entries(Self) -> Array[(String, String)]
+pub fn Query::equal(Self, Self) -> Bool
+pub fn Query::get(Self, StringView) -> String?
+pub fn Query::has(Self, StringView) -> Bool
+pub fn Query::new(pairs? : Array[(String, String)]) -> Self
+pub fn Query::not_equal(Self, Self) -> Bool
+pub fn Query::remove(Self, StringView) -> Unit
+pub fn Query::set(Self, String, String) -> Unit
+pub fn Query::to_repr(Self) -> @debug.Repr
+pub fn Query::values(Self, StringView) -> Array[String]
 
 pub(all) struct Url {
   scheme : String?
