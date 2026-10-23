@@ -20,8 +20,6 @@ keywords = [
 
 description = "URI references as RFC 3986 defines them: parsing, recomposing, resolving and percent coding by component, form encoding, and data URLs. No sockets."
 
-preferred_target = "wasm-gc"
-
 import {
   "moonbitstack/moonmime@0.2.0",
   "moonbitstack/moonbase@0.4.0",
