@@ -18,7 +18,7 @@ keywords = [
   "moonbit",
 ]
 
-description = "URI references as RFC 3986 defines them: parsing, recomposing, resolving and percent coding by component, form encoding, and data URLs. No sockets."
+description = "URI references for MoonBit, as RFC 3986 defines them."
 
 import {
   "moonbitstack/moonmime@0.2.0",
