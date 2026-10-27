@@ -1,4 +1,4 @@
-// A representation written inside the reference to it: `moon run examples/data`.
+// A representation written inside the reference to it: `moon run src/examples/data`.
 pkgtype(kind: "executable")
 
 import {

@@ -10,7 +10,7 @@ base.resolve(@moonurl.Url::decode("../g")).encode() // "http://a/b/g"
 @dataurl.Url::decode("data:,A%20brief%20note").data // b"A brief note"
 ```
 
-`moon run examples/tour` takes a reference apart, resolves the RFC 3986 §5.4 examples, escapes one string for four components and builds a query; `moon run examples/data` reads the four examples RFC 2397 prints.
+`moon run src/examples/tour` takes a reference apart, resolves the RFC 3986 §5.4 examples, escapes one string for four components and builds a query; `moon run src/examples/data` reads the four examples RFC 2397 prints.
 
 ## Packages
 

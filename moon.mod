@@ -24,3 +24,5 @@ import {
   "moonbitstack/moonmime@0.2.0",
   "moonbitstack/moonbase@0.4.0",
 }
+
+source = "src"
