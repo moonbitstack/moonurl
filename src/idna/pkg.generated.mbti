@@ -1,0 +1,71 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonurl/idna"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn decode(StringView) -> String raise Refused
+
+pub fn encode(StringView) -> String
+
+pub let options : Options
+
+pub let strict : Options
+
+pub fn to_ascii(StringView, options? : Options) -> Outcome
+
+pub fn to_unicode(StringView, options? : Options) -> Outcome
+
+// Errors
+pub(all) suberror Refused {
+  Digit(at~ : Int32)
+  Overflow(at~ : Int32)
+} derive(Eq, @debug.Debug)
+pub fn Refused::equal(Self, Self) -> Bool
+pub fn Refused::not_equal(Self, Self) -> Bool
+pub fn Refused::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+pub(all) enum Fault {
+  Shape(at~ : Int32)
+  Hyphen(at~ : Int32)
+  Dot(at~ : Int32)
+  Disallowed(at~ : Int32, got~ : Char)
+  Std3(at~ : Int32, got~ : Char)
+  Punycode(at~ : Int32)
+  Joiner(at~ : Int32)
+  Bidi(at~ : Int32)
+  Empty(at~ : Int32)
+  Length(limit~ : Int32, got~ : Int32)
+} derive(Eq, @debug.Debug)
+pub fn Fault::equal(Self, Self) -> Bool
+pub fn Fault::not_equal(Self, Self) -> Bool
+pub fn Fault::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Options {
+  transitional : Bool
+  check_hyphens : Bool
+  check_bidi : Bool
+  check_joiners : Bool
+  std3 : Bool
+  dns_length : Bool
+  ignore_invalid_punycode : Bool
+} derive(Eq, @debug.Debug)
+pub fn Options::equal(Self, Self) -> Bool
+pub fn Options::not_equal(Self, Self) -> Bool
+pub fn Options::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Outcome {
+  name : String
+  errors : Array[Fault]
+} derive(Eq, @debug.Debug)
+pub fn Outcome::equal(Self, Self) -> Bool
+pub fn Outcome::is_ok(Self) -> Bool
+pub fn Outcome::not_equal(Self, Self) -> Bool
+pub fn Outcome::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

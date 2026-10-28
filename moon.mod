@@ -23,6 +23,7 @@ description = "URI references for MoonBit, as RFC 3986 defines them."
 import {
   "moonbitstack/moonmime@0.2.0",
   "moonbitstack/moonbase@0.4.0",
+  "moonbitstack/moonucd@0.1.1",
 }
 
 source = "src"

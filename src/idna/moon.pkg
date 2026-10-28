@@ -1,0 +1,14 @@
+// Punycode, RFC 3492:
+// https://www.rfc-editor.org/rfc/rfc3492
+//
+// The transfer encoding UTS 46 spells internationalised labels in: an ASCII
+// label under an `xn--` prefix. One label at a time, no dots — the caller
+// splits the name.
+import {
+  "moonbitstack/moonucd",
+  "moonbitstack/moonucd/normalize",
+}
+
+import {
+  "moonbitstack/moonurl/idna",
+} for "test"
