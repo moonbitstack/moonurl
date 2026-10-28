@@ -297,11 +297,12 @@ pre::-webkit-scrollbar-thumb:hover,
   white-space: nowrap;
   background: var(--ink);
   color: var(--bg);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.02em;
-  padding: 5px 10px;
-  border-radius: 9px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 8px;
   opacity: 0;
   pointer-events: none;
   box-shadow: var(--shadow-md);
@@ -606,7 +607,7 @@ pre .n { color: var(--code-n); font-weight: 700; }
 .step p { color: var(--muted); margin: 10px 0 12px; line-height: 1.62; max-width: 70ch; font-weight: 500; }
 
 /* ---- API reference --------------------------------------------------- */
-.pkg { margin: 0 0 28px; }
+.pkg { margin: 0 0 32px; }
 .pkg > h3 {
   font-size: 15.5px; font-weight: 800; margin: 0 0 4px;
   display: flex; align-items: center; gap: 10px;
@@ -615,26 +616,32 @@ pre .n { color: var(--code-n); font-weight: 700; }
   font-size: 11px; font-weight: 700; color: var(--muted);
   border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px;
 }
-.pkg > .note { color: var(--muted); font-size: 13px; margin: 0 0 14px; font-weight: 500; line-height: 1.55; }
+.pkg > .note { color: var(--muted); font-size: 13px; margin: 0 0 16px; font-weight: 500; line-height: 1.55; }
 .api-item {
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
-  margin: 0 0 9px;
+  margin: 0 0 11px;
   overflow: hidden;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 .api-item[open] { border-color: var(--line-strong); box-shadow: var(--shadow-sm); }
+.api-item:not([open]):hover {
+  background: color-mix(in srgb, var(--c1) 5%, var(--surface));
+  border-color: var(--line-strong);
+}
 .api-item summary {
   cursor: pointer;
   list-style: none;
-  padding: 11px 15px;
+  padding: 14px 19px;
   font-family: var(--mono);
   font-size: 12.5px;
   font-weight: 700;
   color: var(--ink);
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 11px; flex-wrap: wrap;
+  transition: color 0.2s ease;
 }
+.api-item summary:hover { color: var(--ink-soft); }
 .api-item summary::-webkit-details-marker { display: none; }
 .api-item summary .pm {
   flex: none;
@@ -647,9 +654,10 @@ pre .n { color: var(--code-n); font-weight: 700; }
   transition: transform 0.28s var(--ease), background 0.2s ease, color 0.2s ease;
 }
 .api-item[open] summary .pm { transform: rotate(45deg); background: var(--c1); color: #fff; border-color: var(--c1); }
+.api-item::after { opacity: 0.7; }
 .api-item .desc {
-  padding: 0 15px 13px 43px;
-  font-size: 13px; color: var(--muted); line-height: 1.58; font-weight: 500;
+  padding: 3px 19px 17px 48px;
+  font-size: 13px; color: var(--muted); line-height: 1.6; font-weight: 500;
 }
 .api-item[open] .desc { animation: fadeSlide 0.3s var(--ease) both; }
 @keyframes fadeSlide { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
