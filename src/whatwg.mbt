@@ -211,11 +211,6 @@ fn letter(point : Int32) -> Bool {
 }
 
 ///|
-fn number(character : Char) -> Bool {
-  character >= '0' && character <= '9'
-}
-
-///|
 fn plus_minus_dot(character : Char) -> Bool {
   character == '+' || character == '-' || character == '.'
 }
@@ -318,8 +313,8 @@ fn parse(
         }
       Scheme =>
         match c {
-          Some(character) if letter(character.to_int()) ||
-            number(character) ||
+          Some(character) if alpha(character.to_int()) ||
+            digit(character.to_int()) ||
             plus_minus_dot(character) => buffer.push(down(character))
           Some(':') => {
             if only is Some(_) {
@@ -551,7 +546,7 @@ fn parse(
       }
       Port =>
         match c {
-          Some(character) if number(character) => buffer.push(character)
+          Some(character) if digit(character.to_int()) => buffer.push(character)
           _ if c is None ||
             c == Some('/') ||
             c == Some('?') ||
@@ -902,7 +897,7 @@ fn shorten(url : Parts) -> Unit {
 /// written with anything else in the colon's place — `C|` and `C:` name the
 /// same drive, and only the second is the normal form.
 fn drive(text : StringView) -> Bool? {
-  if text.length() != 2 || !letter(text[0].to_int()) {
+  if text.length() != 2 || !alpha(text[0].to_int()) {
     return None
   }
   if text[1].to_int() == 0x3A {
@@ -918,7 +913,7 @@ fn drive(text : StringView) -> Bool? {
 /// Whether the input from `pointer` on starts with a Windows drive letter and
 /// then the end, a slash or a query: `file:C:/x`, but not `file:CD/x`.
 fn drive_at(input : Array[Char], pointer : Int32) -> Bool? {
-  guard pointer + 1 < input.length() && letter(input[pointer].to_int()) else {
+  guard pointer + 1 < input.length() && alpha(input[pointer].to_int()) else {
     return None
   }
   let kind = match input[pointer + 1] {
