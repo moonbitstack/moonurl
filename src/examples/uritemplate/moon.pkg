@@ -1,0 +1,6 @@
+// A URI template filled in and read back: `moon run src/examples/uritemplate`.
+pkgtype(kind: "executable")
+
+import {
+  "moonbitstack/moonurl/template",
+}

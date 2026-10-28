@@ -1,0 +1,13 @@
+// URI templates, RFC 6570:
+// https://www.rfc-editor.org/rfc/rfc6570
+//
+// A string with holes in it — `{/list*}{?q,page}` — and the rules for filling
+// them in from named values. One template, four levels of the specification,
+// all of them here.
+import {
+  "moonbitlang/core/encoding/utf8",
+}
+
+import {
+  "moonbitstack/moonurl/template",
+} for "test"

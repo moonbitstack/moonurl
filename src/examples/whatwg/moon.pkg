@@ -1,0 +1,6 @@
+// What a browser makes of a string, and what its setters do to it: `moon run src/examples/whatwg`.
+pkgtype(kind: "executable")
+
+import {
+  "moonbitstack/moonurl",
+}

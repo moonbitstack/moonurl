@@ -1,0 +1,48 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonurl/template"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+pub(all) suberror Refused {
+  Bracket(at~ : Int32)
+  Syntax(at~ : Int32, got~ : Char)
+  Operator(at~ : Int32, got~ : Char)
+  Length(at~ : Int32, limit~ : Int32, got~ : Int32)
+} derive(Eq, @debug.Debug)
+pub fn Refused::equal(Self, Self) -> Bool
+pub fn Refused::not_equal(Self, Self) -> Bool
+pub fn Refused::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+pub struct Template {
+  // private fields
+} derive(Eq, @debug.Debug)
+pub fn Template::capture(Self, StringView) -> Array[(String, String)]?
+pub fn Template::decode(StringView) -> Self raise Refused
+pub fn Template::encode(Self) -> String
+pub fn Template::equal(Self, Self) -> Bool
+pub fn[T : Variables] Template::expand(Self, T) -> String
+pub fn Template::not_equal(Self, Self) -> Bool
+pub fn Template::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Value {
+  Text(String)
+  List(Array[String])
+  Pairs(Array[(String, String)])
+} derive(Eq, @debug.Debug)
+pub fn Value::equal(Self, Self) -> Bool
+pub fn Value::not_equal(Self, Self) -> Bool
+pub fn Value::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits
+pub(open) trait Variables {
+  fn get(Self, StringView) -> Value?
+}
+pub impl Variables for Map[String, Value]

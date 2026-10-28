@@ -1,6 +1,6 @@
 name = "moonbitstack/moonurl"
 
-version = "0.2.0"
+version = "0.3.0"
 
 readme = "README.md"
 
@@ -12,13 +12,18 @@ keywords = [
   "url",
   "uri",
   "rfc3986",
+  "whatwg",
+  "idna",
+  "punycode",
+  "uri-template",
+  "rfc6570",
   "percent-encoding",
   "data-url",
   "urlencoded",
   "moonbit",
 ]
 
-description = "URI references for MoonBit, as RFC 3986 defines them."
+description = "URLs for MoonBit: WHATWG and RFC 3986 parsing, IDNA, URI templates, percent coding."
 
 import {
   "moonbitstack/moonmime@0.2.0",
