@@ -28,6 +28,10 @@
         root.classList.remove("light"); root.classList.add("dark");
         try { localStorage.setItem("moonurl-theme", "dark"); } catch (e) {}
       }
+      themeToggle.classList.remove("spin");
+      // force reflow so the rotation animation replays each click
+      void themeToggle.offsetWidth;
+      themeToggle.classList.add("spin");
     });
   }
 
@@ -83,17 +87,21 @@
     regions.forEach(function (r) { if (r) r.classList.add("seen"); });
   }
 
-  /* ---------------- Scroll-progress hairline ------------------------- */
+  /* ---------------- Scroll-progress hairline + mesh parallax --------- */
   const progress = document.getElementById("progress");
-  if (stage && progress) {
+  const mesh = document.querySelector(".mesh");
+  if (stage) {
     stage.addEventListener("scroll", function () {
       const max = stage.scrollHeight - stage.clientHeight;
       const pct = max > 0 ? (stage.scrollTop / max) * 100 : 0;
-      progress.style.width = pct + "%";
+      if (progress) progress.style.width = pct + "%";
+      if (mesh && !reduceMotion) {
+        mesh.style.transform = "translate3d(0," + (stage.scrollTop * 0.05) + "px,0)";
+      }
     }, { passive: true });
     // initial paint
     const max = stage.scrollHeight - stage.clientHeight;
-    progress.style.width = (max > 0 ? (stage.scrollTop / max) * 100 : 0) + "%";
+    if (progress) progress.style.width = (max > 0 ? (stage.scrollTop / max) * 100 : 0) + "%";
   }
 
   /* ---------------- Helpers ----------------------------------------- */
@@ -437,14 +445,18 @@
   });
 
   /* ---------------- Copy-to-clipboard for code cards ----------------- */
+  const COPY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
+  const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
   Array.prototype.forEach.call(document.querySelectorAll(".copy"), function (btn) {
+    const original = btn.innerHTML;
     btn.addEventListener("click", function () {
       const card = btn.closest(".codecard");
       const pre = card ? card.querySelector("pre") : null;
       const text = pre ? pre.innerText : "";
       const done = function () {
+        btn.innerHTML = CHECK_ICON;
         btn.classList.add("copied");
-        setTimeout(function () { btn.classList.remove("copied"); }, 1400);
+        setTimeout(function () { btn.innerHTML = original; btn.classList.remove("copied"); }, 1400);
       };
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(done, function () {});
