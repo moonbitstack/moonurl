@@ -70,19 +70,31 @@
   });
 
   if ("IntersectionObserver" in window) {
-    const io = new IntersectionObserver(
+    // Reveal: animate a region once it has entered the view.
+    const revealIO = new IntersectionObserver(
       function (entries) {
         entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            setActive(id);
-            if (!seen[id]) { seen[id] = true; entry.target.classList.add("seen"); }
+          if (entry.isIntersecting && !entry.target.classList.contains("seen")) {
+            entry.target.classList.add("seen");
           }
         });
       },
-      { root: stage, threshold: 0.5 }
+      { root: stage, threshold: 0.15 }
     );
-    regions.forEach(function (r) { if (r) io.observe(r); });
+    regions.forEach(function (r) { if (r) revealIO.observe(r); });
+
+    // Active: whichever region crosses the middle band of the viewport.
+    // A band (not a 0.5 ratio) keeps the rail correct for sections far
+    // taller than one screen, where the intersection ratio never reaches 0.5.
+    const activeIO = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      },
+      { root: stage, rootMargin: "-45% 0px -45% 0px", threshold: 0 }
+    );
+    regions.forEach(function (r) { if (r) activeIO.observe(r); });
   } else {
     regions.forEach(function (r) { if (r) r.classList.add("seen"); });
   }
