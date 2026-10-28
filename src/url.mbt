@@ -75,6 +75,13 @@ pub(all) suberror Refused {
   Port(at~ : Int32)
   /// An IP-literal with no closing bracket, at the opening one's offset.
   Host(at~ : Int32)
+  /// A host that is not a host: an empty one where one is needed, a code point
+  /// the grammar forbids in one, or a name the IDNA rules refuse.
+  Name(at~ : Int32)
+  /// A number that reads as an IP address and is not one.
+  Address(at~ : Int32)
+  /// Input with no scheme, and no base to take one from.
+  Scheme(at~ : Int32)
   /// A form-encoded string with more pairs than the limit.
   Pairs(limit~ : Int32)
   /// One form-encoded pair longer than the limit, in octets.
@@ -226,7 +233,75 @@ pub fn normalize_escapes(text : StringView) -> String {
 ///
 /// Any string splits, so what comes back is a reference even when it is one
 /// nobody would write. Only the authority can be malformed.
-pub fn Url::decode(text : StringView) -> Url raise Refused {
+
+///|
+/// Which grammar decides what a string means. The two disagree about almost
+/// everything a browser has to get right, and both are in the standard library
+/// of every language that talks to the web.
+pub(all) enum Syntax {
+  /// RFC 3986: the generic grammar, where `http://h:80/` keeps its port and
+  /// `http:g` is a URI with scheme `http`.
+  Rfc3986
+  /// The WHATWG URL Standard: special schemes with their default ports,
+  /// backslashes as soliduses, IPv4 in any of its spellings, and a host name
+  /// run through IDNA.
+  Whatwg
+} derive(Eq, Debug)
+
+///|
+pub extend Syntax with Eq::{equal, not_equal}
+
+///|
+pub extend Syntax with Debug::{to_repr}
+
+///|
+/// The grammar [`Url::decode`] uses when nothing says.
+pub let rfc3986 : Syntax = Rfc3986
+
+///|
+/// Take a reference apart.
+///
+/// Under `Rfc3986` any string splits (§3), and only the authority can be
+/// malformed. Under `Whatwg` the string is what a browser would make of it: a
+/// reference that does not parse is refused rather than guessed at.
+///
+/// `base` resolves a relative reference against one, in whichever grammar is
+/// asked for. The WHATWG algorithm takes the base as text and parses it again,
+/// so a base that is itself not a URL is refused here too.
+///
+/// ```mbt check
+/// test {
+///   // RFC 3986 keeps the reference as it was written.
+///   let url = @moonurl.Url::decode("HTTP://EXAMPLE.test:80/a/../b?q#f")
+///   assert_eq(url.encode(), "HTTP://EXAMPLE.test:80/a/../b?q#f")
+///   let whatwg = @moonurl.Url::decode(
+///     "HTTP://EXAMPLE.test:80/a/../b",
+///     syntax=@moonurl.Whatwg,
+///   )
+///   assert_eq(whatwg.encode(), "http://example.test/b")
+/// }
+/// ```
+pub fn Url::decode(
+  text : StringView,
+  syntax~ : Syntax = rfc3986,
+  base? : Url,
+) -> Url raise Refused {
+  match syntax {
+    Rfc3986 => {
+      let reference = split(text)
+      match base {
+        Some(base) => base.resolve(reference)
+        None => reference
+      }
+    }
+    Whatwg => whatwg_decode(text, base)
+  }
+}
+
+///|
+/// The RFC 3986 reading of a reference: the five components, split where §B
+/// says to split them.
+fn split(text : StringView) -> Url raise Refused {
   let n = text.length()
   let mut i = 0
   let scheme = scheme_of(text)
@@ -387,6 +462,11 @@ pub fn Url::encode(self : Url) -> String {
       out.write_string(authority)
     }
     None => ()
+  }
+  // A path that begins with two soliduses, under no authority, would read
+  // back as one: `./` in front of it keeps it a path (§4.5).
+  if self.host is None && starts(self.path[:], "//") {
+    out.write_string("/.")
   }
   out.write_string(self.path)
   match self.query {

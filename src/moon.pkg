@@ -14,4 +14,5 @@
 // Windows drive letters.
 import {
   "moonbitlang/core/encoding/utf8",
+  "moonbitstack/moonurl/idna",
 }

@@ -6,6 +6,8 @@ import {
 }
 
 // Values
+pub fn domain(StringView, strict? : Bool) -> String raise Refused
+
 pub fn escape(BytesView, kind? : Kind, spare? : StringView) -> String
 
 pub fn escape_text(StringView, kind? : Kind, spare? : StringView) -> String
@@ -20,6 +22,8 @@ pub fn normalize_escapes(StringView) -> String
 
 pub fn remove_dots(String) -> String
 
+pub let rfc3986 : Syntax
+
 pub fn unescape(BytesView) -> Bytes
 
 pub fn unescape_text(StringView) -> String
@@ -28,6 +32,9 @@ pub fn unescape_text(StringView) -> String
 pub(all) suberror Refused {
   Port(at~ : Int32)
   Host(at~ : Int32)
+  Name(at~ : Int32)
+  Address(at~ : Int32)
+  Scheme(at~ : Int32)
   Pairs(limit~ : Int32)
   Pair(limit~ : Int32, got~ : Int32)
 } derive(Eq, @debug.Debug)
@@ -76,6 +83,14 @@ pub fn Query::set(Self, String, String) -> Unit
 pub fn Query::to_repr(Self) -> @debug.Repr
 pub fn Query::values(Self, StringView) -> Array[String]
 
+pub(all) enum Syntax {
+  Rfc3986
+  Whatwg
+} derive(Eq, @debug.Debug)
+pub fn Syntax::equal(Self, Self) -> Bool
+pub fn Syntax::not_equal(Self, Self) -> Bool
+pub fn Syntax::to_repr(Self) -> @debug.Repr
+
 pub(all) struct Url {
   scheme : String?
   userinfo : String?
@@ -86,14 +101,25 @@ pub(all) struct Url {
   fragment : String?
 } derive(Eq, @debug.Debug)
 pub fn Url::authority(Self) -> String?
-pub fn Url::decode(StringView) -> Self raise Refused
+pub fn Url::decode(StringView, syntax? : Syntax, base? : Self) -> Self raise Refused
 pub fn Url::encode(Self) -> String
 pub fn Url::equal(Self, Self) -> Bool
 pub fn Url::is_absolute(Self) -> Bool
 pub fn Url::new(scheme? : String, userinfo? : String, host? : String, port? : Int32, path? : String, query? : String, fragment? : String) -> Self
 pub fn Url::normalize(Self) -> Self
 pub fn Url::not_equal(Self, Self) -> Bool
+pub fn Url::origin(Self) -> String
+pub fn Url::params(Self) -> Query raise Refused
 pub fn Url::resolve(Self, Self) -> Self
+pub fn Url::set_fragment(Self, StringView) -> Self
+pub fn Url::set_host(Self, StringView) -> Self
+pub fn Url::set_hostname(Self, StringView) -> Self
+pub fn Url::set_password(Self, StringView) -> Self
+pub fn Url::set_path(Self, StringView) -> Self
+pub fn Url::set_port(Self, StringView) -> Self
+pub fn Url::set_query(Self, StringView) -> Self
+pub fn Url::set_scheme(Self, StringView) -> Self
+pub fn Url::set_username(Self, StringView) -> Self
 pub fn Url::to_repr(Self) -> @debug.Repr
 
 // Type aliases
