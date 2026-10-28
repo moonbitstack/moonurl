@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%239FA1FF'/%3E%3Ctext x='16' y='22' font-size='18' font-family='monospace' font-weight='700' fill='white' text-anchor='middle'%3E/%3C/text%3E%3C/svg%3E" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="moonurl — URLs for MoonBit: WHATWG and RFC 3986 parsing, IDNA, URI templates, percent coding." />
+    <title>moonurl — URLs for MoonBit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a class="gh" href="https://github.com/moonbitstack/moonurl" target="_blank" rel="noopener" aria-label="Repository">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      <span>GitHub</span>
+    </a>
+
+    <nav class="rail" aria-label="Sections">
+      <a href="#home" data-target="home" class="active"><span class="tip">Home</span></a>
+      <a href="#guide" data-target="guide"><span class="tip">Guide</span></a>
+      <a href="#api" data-target="api"><span class="tip">API</span></a>
+      <a href="#play" data-target="play"><span class="tip">Play</span></a>
+    </nav>
+
+    <main class="stage" id="stage">
+
+      <!-- ============================ HOME ============================ -->
+      <section class="region" id="home">
+        <div class="wrap">
+          <span class="eyebrow">A URL library for MoonBit</span>
+          <h1 class="title">moonurl<span class="dot">.</span></h1>
+          <p class="lead">
+            URLs read the way a browser reads them and the way RFC 3986 says to
+            read them: one type, two grammars. Host names are internationalised,
+            URI templates fill in and read back, and form bodies ride on the same
+            percent coding. No sockets.
+          </p>
+
+          <div class="stats">
+            <div class="stat"><div class="n">2</div><div class="k">grammars &middot; RFC 3986 &amp; WHATWG</div></div>
+            <div class="stat"><div class="n">6</div><div class="k">specifications implemented</div></div>
+            <div class="stat"><div class="n">4</div><div class="k">URI Template levels</div></div>
+            <div class="stat"><div class="n">UTF&#8209;8</div><div class="k">/ NFC normalisation</div></div>
+          </div>
+
+          <div class="features">
+            <div class="feature"><div class="ic">≡</div><h3>Two grammars, one type</h3><p>Switch the reader for a single string and keep working with the result.</p></div>
+            <div class="feature"><div class="ic">@</div><h3>Internationalised names</h3><p>UTS&nbsp;46 mapping and RFC&nbsp;3492 punycode turn any script into ASCII.</p></div>
+            <div class="feature"><div class="ic">{ }</div><h3>URI templates</h3><p>RFC&nbsp;6570, all four levels: expand a URI and read one back.</p></div>
+            <div class="feature"><div class="ic">&amp;</div><h3>Form encoding</h3><p>application/x-www-form-urlencoded as ordered, repeatable name/value pairs.</p></div>
+            <div class="feature"><div class="ic">◧</div><h3>Data URLs</h3><p>RFC&nbsp;2397 — a whole representation written inside the reference to it.</p></div>
+            <div class="feature"><div class="ic">%</div><h3>Percent coding</h3><p>Escape and unescape by component, with the safe set each one allows.</p></div>
+          </div>
+
+          <div class="codecard" style="margin-top:34px">
+            <div class="label">Add the package</div>
+            <pre><code>moon add moonbitstack/moonurl</code></pre>
+          </div>
+
+          <div class="foot">
+            <span>Apache-2.0 &middot; MoonBit</span>
+            <span>Scroll down &darr; &middot; or pick a section on the left</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ GUIDE =========================== -->
+      <section class="region" id="guide">
+        <div class="wrap">
+          <span class="eyebrow">Guide</span>
+          <h2 class="sec">From first line to the corners</h2>
+          <p class="sec-sub">Each snippet runs in a project that has only this package added.</p>
+
+          <div class="step">
+            <span class="num">1</span><h3>Parse and read a reference</h3>
+            <p>A reference is five components. Read it, then ask for any of them.</p>
+            <div class="codecard">
+              <pre><code>let url = @moonurl.Url::decode("https://leo:pw@example.test:8443/a/b?x=1#top")
+url.scheme      <span class="c">// Some("https")</span>
+url.host        <span class="c">// Some("example.test")</span>
+url.port        <span class="c">// Some(8443)</span>
+url.query       <span class="c">// Some("x=1")</span>
+url.origin()    <span class="c">// "https://example.test:8443"</span></code></pre>
+            </div>
+          </div>
+
+          <div class="step">
+            <span class="num">2</span><h3>Resolve a relative reference</h3>
+            <p><code>resolve</code> applies RFC 3986 &sect;5.4 against a base.</p>
+            <div class="codecard">
+              <pre><code>let base = @moonurl.Url::decode("http://example.test/a/b/c")
+base.resolve(@moonurl.Url::decode("../d"))
+<span class="c">// http://example.test/a/d</span></code></pre>
+            </div>
+          </div>
+
+          <div class="step">
+            <span class="num">3</span><h3>Two readings of the same string</h3>
+            <p><code>syntax</code> defaults to <code>rfc3986</code>, so existing code is unchanged. The WHATWG reading normalises on the way in.</p>
+            <div class="codecard">
+              <pre><code>@moonurl.Url::decode("HTTP://EXAMPLE.test:80/a/../b").encode()
+<span class="c">// "HTTP://EXAMPLE.test:80/a/../b"</span>
+
+@moonurl.Url::decode("HTTP://EXAMPLE.test:80/a/../b", syntax=@moonurl.Whatwg).encode()
+<span class="c">// "http://example.test/b"</span></code></pre>
+            </div>
+          </div>
+
+          <div class="step">
+            <span class="num">4</span><h3>Names in any script</h3>
+            <p>A host name goes through UTS&nbsp;46; an ASCII name is taken as it stands.</p>
+            <div class="codecard">
+              <pre><code>@moonurl.domain("MÜNCHEN.example")                        <span class="c">// "xn--mnchen-3ya.example"</span>
+@moonurl.Url::decode("http://192.0x00A80001/", syntax=@moonurl.Whatwg).host
+<span class="c">// Some("192.168.0.1")</span></code></pre>
+            </div>
+          </div>
+
+          <div class="step">
+            <span class="num">5</span><h3>Fill in a template, read it back</h3>
+            <p>All four levels; <code>capture</code> reverses <code>expand</code>.</p>
+            <div class="codecard">
+              <pre><code>let values : Map[String, @template.Value] = Map([])
+values.set("id", @template.Value::Text("42"))
+values.set("page", @template.Value::Text("2"))
+
+@template.Template::decode("/users/{id}{?page}").expand(values)
+<span class="c">// "/users/42?page=2"</span>
+@template.Template::decode("/users/{id}{?page}").capture("/users/42?page=2")
+<span class="c">// [("id", "42"), ("page", "2")]</span></code></pre>
+            </div>
+          </div>
+
+          <div class="step">
+            <span class="num">6</span><h3>Form bodies and data URLs</h3>
+            <p>A URL's query and a form body are the same ordered pairs.</p>
+            <div class="codecard">
+              <pre><code>let q = @moonurl.Query::decode("a=1&amp;b=2&amp;a=3")
+q.get("a")        <span class="c">// Some("1")</span>
+q.values("a")     <span class="c">// ["1", "3"]</span>
+q.encode()        <span class="c">// "a=1&amp;a=3&amp;b=2"</span>
+
+@moonurl.dataurl.Url::decode("data:text/plain,Hi%20there").data
+<span class="c">// b"Hi there"</span></code></pre>
+            </div>
+          </div>
+
+          <div class="foot">
+            <span>Run the examples: <code>moon run src/examples/tour</code></span>
+            <span><a href="https://github.com/moonbitstack/moonurl" target="_blank" rel="noopener">Source on GitHub &nearr;</a></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ API ============================= -->
+      <section class="region" id="api">
+        <div class="wrap">
+          <span class="eyebrow">Reference</span>
+          <h2 class="sec">API</h2>
+          <p class="sec-sub">Public items, grouped by package. Signatures match the compiled interface.</p>
+
+          <div class="pkg">
+            <h3>moonurl <span class="tag">Url · Query · percent coding</span></h3>
+            <div class="note">Parsing, recomposing, resolving, normalising, origins, setters; percent coding by component; form bodies.</div>
+
+            <details class="api-item" open><summary><span class="pm">+</span>Url::decode(text, syntax?, base?) -&gt; Url raise Refused</summary><div class="desc">Read a reference in either grammar. <code>syntax</code> defaults to <code>rfc3986</code>; <code>base</code> resolves a relative reference.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Url::encode() -&gt; String</summary><div class="desc">Write the reference back out.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Url::resolve(reference) -&gt; Url</summary><div class="desc">Resolve against this base (RFC 3986 &sect;5.4).</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Url::normalize() -&gt; Url</summary><div class="desc">Case, escapes and dot segments (&sect;6.2.2).</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Url::origin() -&gt; String</summary><div class="desc"><code>scheme://host:port</code>, or <code>"null"</code>.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Url::authority() -&gt; String?</summary><div class="desc">The authority, brackets restored.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Url::is_absolute() -&gt; Bool</summary><div class="desc">A scheme and no fragment.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Url::params() -&gt; Query raise Refused</summary><div class="desc">The query as ordered pairs.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Url::set_scheme / set_username / set_password / set_host / set_hostname / set_port / set_path / set_query / set_fragment</summary><div class="desc">Nine setters: one component changed, the rest kept.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Url::new(..) -&gt; Url</summary><div class="desc">A reference built piece by piece.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>domain(text, strict?) -&gt; String raise Refused</summary><div class="desc">A host name in ASCII (UTS&nbsp;46).</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>escape / escape_text / unescape / unescape_text</summary><div class="desc">Percent-encode octets or text, and undo it.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>escaped(text, kind?) / normalize_escapes(text) / remove_dots(path)</summary><div class="desc">Check completeness; upper-case hex; drop <code>.</code> and <code>..</code> segments.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Query::decode(bytes, limits?) / encode() / get / values / has / add / set / remove / entries / new</summary><div class="desc">Ordered pairs; <code>+</code> is a space; serialiser keeps only letters, digits and <code>*-._</code>.</div></details>
+          </div>
+
+          <div class="pkg">
+            <h3>moonurl/idna <span class="tag">punycode · UTS 46</span></h3>
+            <div class="note">A name mapped to ASCII and back: the mapping table, NFC, hyphen and joiner rules, the bidi rule, and DNS lengths.</div>
+            <details class="api-item" open><summary><span class="pm">+</span>to_ascii(text, options?) -&gt; Outcome</summary><div class="desc">A name in ASCII, plus any faults the standard recorded.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>to_unicode(text, options?) -&gt; Outcome</summary><div class="desc">A name back in Unicode, plus any faults.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>encode(label) -&gt; String / decode(label) -&gt; String raise Refused</summary><div class="desc">One label of RFC&nbsp;3492 punycode.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>options : Options / strict : Options</summary><div class="desc">The lenient default and the strict (DNS-length) preset.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Outcome { name, errors } / Fault / Options</summary><div class="desc"><code>is_ok()</code> tells you; <code>errors</code> lists what the standard objected to.</div></details>
+          </div>
+
+          <div class="pkg">
+            <h3>moonurl/template <span class="tag">RFC 6570</span></h3>
+            <div class="note">Holes named and filled: simple and reserved expansions, label, path and parameter operators, prefixes and exploded lists and pairs.</div>
+            <details class="api-item" open><summary><span class="pm">+</span>Template::decode(text) -&gt; Template raise Refused</summary><div class="desc">Read a template.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Template::expand(values) -&gt; String</summary><div class="desc">Fill it in. Any <code>Variables</code> works; a <code>Map[String, Value]</code> already does.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Template::capture(uri) -&gt; Array[(String, String)]?</summary><div class="desc">Read a URI back into the names that made it.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Value :: Text / List / Pairs</summary><div class="desc">A scalar, a list, or a list of pairs fed to the holes.</div></details>
+          </div>
+
+          <div class="pkg">
+            <h3>moonurl/dataurl <span class="tag">RFC 2397</span></h3>
+            <div class="note">A whole representation written inside the reference to it.</div>
+            <details class="api-item" open><summary><span class="pm">+</span>Url::decode(text, strict?) -&gt; Url raise Refused</summary><div class="desc">Read a data URL.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Url::encode(base64?) -&gt; String / new(Bytes, kind?)</summary><div class="desc">Write it back; choose base64 or the URL-safe form.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Url::charset() -&gt; String</summary><div class="desc">The media type's charset, defaulting to US-ASCII.</div></details>
+          </div>
+
+          <div class="foot">
+            <span>Errors are one enum per package — <code>Refused</code> — every offset named <code>at</code>.</span>
+            <span><a href="https://github.com/moonbitstack/moonurl" target="_blank" rel="noopener">Source on GitHub &nearr;</a></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ PLAY ============================ -->
+      <section class="region" id="play">
+        <div class="wrap">
+          <span class="eyebrow">Playground</span>
+          <h2 class="sec">Try it in the browser</h2>
+          <p class="sec-sub">Client-side ports of the same algorithms — punycode (RFC&nbsp;3492) and NFC, and the RFC&nbsp;6570 expander.</p>
+
+          <div class="demo">
+            <h3>Internationalised name</h3>
+            <p class="hint">Type a host name. Non-ASCII labels become <code>xn--</code> under UTS&nbsp;46.</p>
+            <div class="field">
+              <label for="idna-in">Host name</label>
+              <input id="idna-in" type="text" value="münchen.example" spellcheck="false" />
+            </div>
+            <div class="row">
+              <button class="act" id="idna-a">To ASCII</button>
+              <button class="act ghost" id="idna-u">To Unicode</button>
+            </div>
+            <div class="out" id="idna-out"></div>
+            <div class="chips" id="idna-chips"></div>
+          </div>
+
+          <div class="demo">
+            <h3>URI Template</h3>
+            <p class="hint">Give a template and variables as JSON. Lists and objects become lists and pairs.</p>
+            <div class="field">
+              <label for="tpl-in">Template</label>
+              <input id="tpl-in" type="text" value="/users{/list*}{?q,page}" spellcheck="false" />
+            </div>
+            <div class="field">
+              <label for="tpl-vars">Variables (JSON)</label>
+              <textarea id="tpl-vars" rows="4" spellcheck="false">{
+  "list": ["red", "green"],
+  "q": "moon bit",
+  "page": "2"
+}</textarea>
+            </div>
+            <div class="row">
+              <button class="act" id="tpl-go">Expand</button>
+            </div>
+            <div class="out" id="tpl-out"></div>
+          </div>
+
+          <div class="demo">
+            <h3>Take a URL apart</h3>
+            <p class="hint">A plain splitter for the common shape — scheme, authority, path, query, fragment.</p>
+            <div class="field">
+              <label for="url-in">URL</label>
+              <input id="url-in" type="text" value="https://leo:pw@example.test:8443/a/b?x=1#top" spellcheck="false" />
+            </div>
+            <div class="row">
+              <button class="act" id="url-go">Dissect</button>
+            </div>
+            <div class="out" id="url-out"></div>
+          </div>
+
+          <div class="foot">
+            <span>Demos run locally — nothing leaves your browser.</span>
+            <span><a href="https://github.com/moonbitstack/moonurl" target="_blank" rel="noopener">Source on GitHub &nearr;</a></span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
