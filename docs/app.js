@@ -1,8 +1,35 @@
-/* moonurl docs — region navigation + interactive playground.
-   Self-contained: punycode (RFC 3492) and a UTS 46 subset (NFC via
-   String.normalize), plus an RFC 6570 level-4 expander. No dependencies. */
+/* moonurl docs — region navigation, theme toggle, and an interactive
+   playground. Self-contained: punycode (RFC 3492) and a UTS 46 subset
+   (NFC via String.normalize), plus an RFC 6570 level-4 expander.
+   No dependencies. */
 (function () {
   "use strict";
+
+  const root = document.documentElement;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------------- Theme toggle ------------------------------------- */
+  const themeToggle = document.getElementById("theme-toggle");
+  const stored = (function () {
+    try { return localStorage.getItem("moonurl-theme"); } catch (e) { return null; }
+  })();
+  if (stored === "dark") root.classList.add("dark");
+  else if (stored === "light") root.classList.add("light");
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      const isDark = root.classList.contains("dark") ||
+        (!root.classList.contains("light") &&
+         window.matchMedia("(prefers-color-scheme: dark)").matches);
+      if (isDark) {
+        root.classList.remove("dark"); root.classList.add("light");
+        try { localStorage.setItem("moonurl-theme", "light"); } catch (e) {}
+      } else {
+        root.classList.remove("light"); root.classList.add("dark");
+        try { localStorage.setItem("moonurl-theme", "dark"); } catch (e) {}
+      }
+    });
+  }
 
   /* ---------------- Region navigation -------------------------------- */
   const stage = document.getElementById("stage");
@@ -10,12 +37,31 @@
   const regions = links.map(function (a) {
     return document.getElementById(a.dataset.target);
   });
+  const rail = document.querySelector(".rail");
+  const railThumb = document.getElementById("rail-thumb");
+  const seen = Object.create(null);
+
+  function moveThumb(link) {
+    if (!railThumb || !link || !rail) return;
+    const r = rail.getBoundingClientRect();
+    const a = link.getBoundingClientRect();
+    const top = a.top - r.top + a.height / 2 - 8; // 8 = half thumb height
+    railThumb.style.top = top + "px";
+  }
+
+  function setActive(id) {
+    links.forEach(function (a) {
+      const on = a.dataset.target === id;
+      a.classList.toggle("active", on);
+      if (on) moveThumb(a);
+    });
+  }
 
   links.forEach(function (a) {
     a.addEventListener("click", function (e) {
       e.preventDefault();
       const el = document.getElementById(a.dataset.target);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (el) el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
     });
   });
 
@@ -25,15 +71,29 @@
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
             const id = entry.target.id;
-            links.forEach(function (a) {
-              a.classList.toggle("active", a.dataset.target === id);
-            });
+            setActive(id);
+            if (!seen[id]) { seen[id] = true; entry.target.classList.add("seen"); }
           }
         });
       },
       { root: stage, threshold: 0.5 }
     );
     regions.forEach(function (r) { if (r) io.observe(r); });
+  } else {
+    regions.forEach(function (r) { if (r) r.classList.add("seen"); });
+  }
+
+  /* ---------------- Scroll-progress hairline ------------------------- */
+  const progress = document.getElementById("progress");
+  if (stage && progress) {
+    stage.addEventListener("scroll", function () {
+      const max = stage.scrollHeight - stage.clientHeight;
+      const pct = max > 0 ? (stage.scrollTop / max) * 100 : 0;
+      progress.style.width = pct + "%";
+    }, { passive: true });
+    // initial paint
+    const max = stage.scrollHeight - stage.clientHeight;
+    progress.style.width = (max > 0 ? (stage.scrollTop / max) * 100 : 0) + "%";
   }
 
   /* ---------------- Helpers ----------------------------------------- */
@@ -41,7 +101,11 @@
     el.textContent = text;
     el.classList.toggle("err", !!isErr);
   }
-
+  function escapeHtml(s) {
+    return s.replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
   function isAscii(s) {
     for (let i = 0; i < s.length; i++) {
       if (s.charCodeAt(i) > 127) return false;
@@ -63,7 +127,6 @@
     }
     return k + Math.floor(((BASE - TMIN + 1) * delta) / (delta + SKEW));
   }
-
   function digitToBasic(d) {
     return String.fromCharCode(d + 22 + 75 * (d < 26 ? 1 : 0));
   }
@@ -73,12 +136,10 @@
     if (cp >= 97 && cp <= 122) return cp - 97;  // a-z
     return -1;
   }
-
   function punyEncode(input) {
-    const cps = Array.from(input);            // code points
+    const cps = Array.from(input);
     let n = INIT_N, delta = 0, bias = INIT_BIAS;
-    let output = [];
-    let basic = [];
+    let output = [], basic = [];
     for (let i = 0; i < cps.length; i++) {
       const cp = cps[i].codePointAt(0);
       if (cp < 128) basic.push(cps[i]);
@@ -87,7 +148,6 @@
     output = basic.slice();
     let h = b;
     if (b > 0 && h < cps.length) output.push("-");
-
     while (h < cps.length) {
       let m = Infinity;
       for (let i = 0; i < cps.length; i++) {
@@ -119,7 +179,6 @@
     }
     return output.join("");
   }
-
   function punyDecode(input) {
     let n = INIT_N, i = 0, bias = INIT_BIAS;
     let output = [];
@@ -175,7 +234,6 @@
     }
     return out.join(".");
   }
-
   function toUnicodeName(name) {
     const labels = name.split(".");
     const out = [];
@@ -190,16 +248,28 @@
     return out.join(".");
   }
 
-  /* ---------------- IDNA demo --------------------------------------- */
+  /* ---------------- IDNA demo (segmented control) ------------------- */
   const idnaIn = document.getElementById("idna-in");
   const idnaOut = document.getElementById("idna-out");
   const idnaChips = document.getElementById("idna-chips");
+  const idnaSeg = document.getElementById("idna-seg");
+  let idnaMode = "a";
 
-  function runIdna(mode) {
+  if (idnaSeg) {
+    Array.prototype.forEach.call(idnaSeg.querySelectorAll(".seg-btn"), function (btn) {
+      btn.addEventListener("click", function () {
+        idnaSeg.querySelectorAll(".seg-btn").forEach(function (b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        idnaMode = btn.dataset.mode;
+        runIdna();
+      });
+    });
+  }
+  function runIdna() {
     const v = idnaIn.value.trim();
     if (!v) { setOut(idnaOut, "Type a host name first.", true); idnaChips.innerHTML = ""; return; }
     try {
-      const result = mode === "a" ? toAsciiName(v) : toUnicodeName(v);
+      const result = idnaMode === "a" ? toAsciiName(v) : toUnicodeName(v);
       setOut(idnaOut, result);
       const ascii = toAsciiName(v);
       idnaChips.innerHTML =
@@ -210,18 +280,12 @@
       idnaChips.innerHTML = "";
     }
   }
-  document.getElementById("idna-a").addEventListener("click", function () { runIdna("a"); });
-  document.getElementById("idna-u").addEventListener("click", function () { runIdna("u"); });
-
-  function escapeHtml(s) {
-    return s.replace(/[&<>"]/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
-    });
-  }
+  const idnaRun = document.getElementById("idna-run");
+  if (idnaRun) idnaRun.addEventListener("click", runIdna);
 
   /* ---------------- RFC 6570 expander ------------------------------- */
   const RESERVED = ":/?#[]@!$&'()*+,;=";
-
+  function isUnreserved(ch) { return /[A-Za-z0-9._~-]/.test(ch); }
   function pct(str, reserved) {
     let out = "";
     for (const ch of str) {
@@ -237,54 +301,26 @@
     }
     return out;
   }
-  function isUnreserved(ch) {
-    return /[A-Za-z0-9._~-]/.test(ch);
-  }
-
-  function expandTemplate(tpl, vars) {
-    let result = "";
-    let i = 0;
-    while (i < tpl.length) {
-      if (tpl[i] === "{") {
-        const end = tpl.indexOf("}", i);
-        if (end === -1) { result += tpl.slice(i); break; }
-        result += expandExpr(tpl.slice(i + 1, end), vars);
-        i = end + 1;
-      } else {
-        result += tpl[i];
-        i++;
-      }
-    }
-    return result;
-  }
-
   function expandExpr(expr, vars) {
     const opChars = "+#./;?&";
-    let op = "";
-    let rest = expr;
+    let op = "", rest = expr;
     if (opChars.indexOf(expr[0]) !== -1) { op = expr[0]; rest = expr.slice(1); }
     const named = op === ";" || op === "?" || op === "&";
     const reserved = op === "+" || op === "#";
     const specs = rest.split(",");
     const join = op === "" || op === "+" || op === "#" ? "," :
                  op === "." ? "." : op === "/" ? "/" :
-                 op === ";" ? ";" : "&";   // "?" and "&" join with "&"
+                 op === ";" ? ";" : "&";
     const firstPrefix = (op === "" || op === "+") ? "" : op;
-
-    let out = "";
-    let first = true;
-
+    let out = "", first = true;
     for (const spec of specs) {
       const m = spec.match(/^([^:*]+)(:\d+|\*)?$/);
       if (!m) continue;
-      const name = m[1];
-      const mod = m[2] || "";
+      const name = m[1], mod = m[2] || "";
       if (!Object.prototype.hasOwnProperty.call(vars, name)) continue;
-
       const v = vars[name];
       const items = itemsOf(v, mod);
       const explode = mod === "*";
-
       let piece;
       if (v.type === "pairs") {
         if (explode) {
@@ -299,13 +335,9 @@
         }
       } else if (v.type === "list") {
         if (explode) {
-          if (named) {
-            piece = items.map(function (it) {
-              return name + "=" + pct(it.value, reserved);
-            }).join(join);
-          } else {
-            piece = items.map(function (it) { return pct(it.value, reserved); }).join(join);
-          }
+          piece = named
+            ? items.map(function (it) { return name + "=" + pct(it.value, reserved); }).join(join)
+            : items.map(function (it) { return pct(it.value, reserved); }).join(join);
         } else {
           const flat = items.map(function (it) { return pct(it.value, reserved); }).join(",");
           piece = named ? name + "=" + flat : flat;
@@ -314,15 +346,12 @@
         const val = items[0] ? items[0].value : "";
         piece = named ? name + "=" + pct(val, reserved) : pct(val, reserved);
       }
-
       if (first) { out += firstPrefix; first = false; }
       else { out += join; }
       out += piece;
     }
     return out;
   }
-
-  // Array of { name, value } for one variable, prefix applied to a scalar.
   function itemsOf(v, mod) {
     if (v.type === "scalar") {
       let s = String(v.value);
@@ -333,14 +362,22 @@
       return v.value.map(function (x) { return { name: "", value: String(x) }; });
     }
     if (v.type === "pairs") {
-      return v.value.map(function (kv) {
-        return { name: String(kv[0]), value: String(kv[1]) };
-      });
+      return v.value.map(function (kv) { return { name: String(kv[0]), value: String(kv[1]) }; });
     }
     return [];
   }
-
-  // Accept JSON: string -> Text, array -> List, object -> Pairs.
+  function expandTemplate(tpl, vars) {
+    let result = "", i = 0;
+    while (i < tpl.length) {
+      if (tpl[i] === "{") {
+        const end = tpl.indexOf("}", i);
+        if (end === -1) { result += tpl.slice(i); break; }
+        result += expandExpr(tpl.slice(i + 1, end), vars);
+        i = end + 1;
+      } else { result += tpl[i]; i++; }
+    }
+    return result;
+  }
   function jsonToVars(text) {
     const obj = JSON.parse(text);
     const vars = {};
@@ -360,11 +397,11 @@
     }
     return vars;
   }
-
   const tplIn = document.getElementById("tpl-in");
   const tplVars = document.getElementById("tpl-vars");
   const tplOut = document.getElementById("tpl-out");
-  document.getElementById("tpl-go").addEventListener("click", function () {
+  const tplGo = document.getElementById("tpl-go");
+  if (tplGo) tplGo.addEventListener("click", function () {
     try {
       const vars = jsonToVars(tplVars.value);
       setOut(tplOut, expandTemplate(tplIn.value.trim(), vars));
@@ -376,7 +413,8 @@
   /* ---------------- Plain URL splitter ------------------------------ */
   const urlIn = document.getElementById("url-in");
   const urlOut = document.getElementById("url-out");
-  document.getElementById("url-go").addEventListener("click", function () {
+  const urlGo = document.getElementById("url-go");
+  if (urlGo) urlGo.addEventListener("click", function () {
     const s = urlIn.value.trim();
     const m = s.match(/^(([^:/?#]+):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/);
     if (!m) { setOut(urlOut, "Could not parse.", true); return; }
@@ -386,21 +424,39 @@
     if (at !== -1) { userinfo = authority.slice(0, at); host = authority.slice(at + 1); }
     const colon = host.lastIndexOf(":");
     if (colon !== -1 && host[colon + 1] !== "]") {
-      // crude: only treat as port if the part after : is all digits
       const maybe = host.slice(colon + 1);
       if (/^\d+$/.test(maybe)) { port = maybe; host = host.slice(0, colon); }
     }
     const lines = [
-      ["scheme", m[2] || ""],
-      ["userinfo", userinfo],
-      ["host", host],
-      ["port", port],
-      ["path", m[5] || ""],
-      ["query", m[7] || ""],
-      ["fragment", m[9] || ""]
+      ["scheme", m[2] || ""], ["userinfo", userinfo], ["host", host],
+      ["port", port], ["path", m[5] || ""], ["query", m[7] || ""], ["fragment", m[9] || ""]
     ];
     setOut(urlOut, lines.map(function (l) {
       return l[0] + " = " + (l[1] === "" ? "(none)" : JSON.stringify(l[1]));
     }).join("\n"));
   });
+
+  /* ---------------- Copy-to-clipboard for code cards ----------------- */
+  Array.prototype.forEach.call(document.querySelectorAll(".copy"), function (btn) {
+    btn.addEventListener("click", function () {
+      const card = btn.closest(".codecard");
+      const pre = card ? card.querySelector("pre") : null;
+      const text = pre ? pre.innerText : "";
+      const done = function () {
+        btn.classList.add("copied");
+        setTimeout(function () { btn.classList.remove("copied"); }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () {});
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); done(); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+    });
+  });
+
+  /* ---------------- First paint of the demos ------------------------ */
+  runIdna();
 })();
