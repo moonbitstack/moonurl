@@ -1,6 +1,6 @@
 name = "moonbitstack/moonurl"
 
-version = "0.3.0"
+version = "0.2.1"
 
 readme = "README.md"
 
