@@ -199,9 +199,11 @@ pub fn escaped(
 /// Percent-encoding normalised (RFC 3986 §6.2.2.2): hex digits in upper case,
 /// and escapes of unreserved octets written out plainly.
 pub fn normalize_escapes(text : StringView) -> String {
-  let digits = "0123456789ABCDEF"
+  let digits = b"0123456789ABCDEF"
   let raw = @utf8.encode(text)
-  let out = StringBuilder()
+  // Escapes are rewritten octet by octet and every other octet is kept, so the
+  // output is the input's UTF-8 with only ASCII changed, and decodes again.
+  let out = Buffer(size_hint=raw.length())
   let mut i = 0
   while i < raw.length() {
     if raw[i] == b'%' && i + 2 < raw.length() {
@@ -210,20 +212,20 @@ pub fn normalize_escapes(text : StringView) -> String {
       if hi >= 0 && lo >= 0 {
         let b = (hi << 4) | lo
         if unreserved(b) {
-          out.write_char(b.unsafe_to_char())
+          out.write_byte(b.to_byte())
         } else {
-          out.write_char('%')
-          out.write_char(digits[b / 16].unsafe_to_char())
-          out.write_char(digits[b % 16].unsafe_to_char())
+          out.write_byte(b'%')
+          out.write_byte(digits[b / 16])
+          out.write_byte(digits[b % 16])
         }
         i += 3
         continue
       }
     }
-    out.write_char(raw[i].to_int().unsafe_to_char())
+    out.write_byte(raw[i])
     i += 1
   }
-  out.to_string()
+  @utf8.decode_lossy(out.to_bytes())
 }
 
 // ------------------------------------------------------------------- reading
@@ -787,13 +789,8 @@ fn literal(host : String) -> Bool {
 ///|
 fn lower(text : String) -> String {
   let out = StringBuilder()
-  for i = 0; i < text.length(); i = i + 1 {
-    let b = text[i].to_int()
-    if b >= 0x41 && b <= 0x5A {
-      out.write_char((b + 32).unsafe_to_char())
-    } else {
-      out.write_char(b.unsafe_to_char())
-    }
+  for c in text {
+    out.write_char(c.to_ascii_lowercase())
   }
   out.to_string()
 }

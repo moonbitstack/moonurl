@@ -242,6 +242,11 @@ test "normalising does the three things §6.2.2 lists" {
   assert_eq(@moonurl.normalize_escapes("%7e%2Fa"), "~%2Fa")
   assert_eq(@moonurl.normalize_escapes("%e9%aa%87"), "%E9%AA%87")
   assert_eq(@moonurl.normalize_escapes("100%"), "100%")
+  assert_eq(@moonurl.normalize_escapes("例え%7e/𝄞%2f"), "例え~/𝄞%2F")
+  assert_eq(
+    @moonurl.Url::decode("HTTP://EXAMPLE.例え.JP/%7Ea").normalize().encode(),
+    "http://example.例え.jp/~a",
+  )
   let url = @moonurl.Url::decode("HTTP://EXAMPLE.test/a/./b/../c/%7euser")
   assert_eq(url.normalize().encode(), "http://example.test/a/c/~user")
   // §6.2.3 is not done here: the port stays, because whether 80 is the default
