@@ -328,19 +328,23 @@ q.encode()        <span class="c">// "a=1&amp;a=3&amp;b=2"</span>
 
           <div class="demo">
             <h3>Take a URL apart</h3>
-            <p class="hint">A plain splitter for the common shape — scheme, authority, path, query, fragment.</p>
+            <p class="hint">The same string by either grammar: RFC 3986, or the WHATWG URL Standard a browser follows.</p>
             <div class="field">
               <label for="url-in">URL</label>
               <input id="url-in" type="text" value="https://leo:pw@example.test:8443/a/b?x=1#top" spellcheck="false" />
             </div>
             <div class="row">
+              <div class="seg" id="url-seg">
+                <button class="seg-btn active" data-mode="rfc3986" type="button">RFC 3986</button>
+                <button class="seg-btn" data-mode="whatwg" type="button">WHATWG</button>
+              </div>
               <button class="act" id="url-go" type="button">Dissect</button>
             </div>
             <div class="out" id="url-out"></div>
           </div>
 
           <div class="foot">
-            <span>Demos run locally — nothing leaves your browser.</span>
+            <span>The demos run moonurl itself, built to JavaScript; nothing leaves your browser.</span>
             <span><a href="https://github.com/moonbitstack/moonurl" target="_blank" rel="noopener">Source on GitHub &nearr;</a></span>
           </div>
         </div>

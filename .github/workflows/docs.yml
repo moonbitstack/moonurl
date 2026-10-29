@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - "docs/**"
+      - "src/**"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
@@ -22,7 +23,21 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: install moon
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: build the playground engine
+        run: |
+          moon update
+          moon build --target js --release src/examples/browser
+          mkdir -p docs/engine
+          cp _build/js/release/build/examples/browser/browser.js docs/engine/moonurl.js
 
       - name: Configure Pages
         uses: actions/configure-pages@v6

@@ -1,0 +1,17 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonurl/examples/browser"
+
+// Values
+pub fn expand(String, String) -> String
+
+pub fn idna(String) -> String
+
+pub fn split(String, String) -> String
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

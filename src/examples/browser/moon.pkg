@@ -1,0 +1,11 @@
+// The playground's engine: the library built to JavaScript for the site.
+import {
+  "moonbitstack/moonurl",
+  "moonbitstack/moonurl/idna",
+  "moonbitstack/moonurl/template",
+  "moonbitlang/core/json",
+}
+
+options(
+  link: { "js": { "exports": [ "idna", "expand", "split" ], "format": "esm" } },
+)
