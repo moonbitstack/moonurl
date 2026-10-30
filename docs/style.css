@@ -174,12 +174,14 @@ a { color: inherit; }
 }
 
 /* ---- Custom scrollbars (on-brand, thin, rounded) --------------------- */
-/* Base: Firefox and Chrome 121+ honour scrollbar-color on any element, so
-   this alone replaces the native dark track in light mode. The webkit
-   rules below refine Chrome/Safari/Edge where supported. */
-.stage, .region, pre, .demo, .scroll, html, body {
-  scrollbar-width: thin;
-  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+/* Chrome drops an element's ::-webkit-scrollbar rules once it has a standard
+   scrollbar property, and scrollbar-color is inherited, so the standard pair
+   is only for engines without the WebKit pseudo-elements. */
+@supports not selector(::-webkit-scrollbar) {
+  .stage, .region, pre, .demo, .scroll, html, body {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+  }
 }
 .stage::-webkit-scrollbar,
 .region::-webkit-scrollbar,
