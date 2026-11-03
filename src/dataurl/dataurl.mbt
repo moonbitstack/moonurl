@@ -10,12 +10,13 @@ pub let kind : String = "text/plain;charset=US-ASCII"
 ///
 /// `data` is already decoded. Which of the two spellings the URL used is a
 /// property of the text, not of what it carries.
+#derive(Eq, Debug)
 pub(all) struct Url {
   /// The media type with its parameters, as the URL spells it.
   kind : String
   /// The payload.
   data : Bytes
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Url with Eq::{equal, not_equal}
@@ -25,6 +26,7 @@ pub extend Url with Debug::{to_repr}
 
 ///|
 /// Why a string is not a data URL.
+#derive(Eq, Debug)
 pub(all) suberror Refused {
   /// It does not begin with `data:`.
   Scheme
@@ -34,7 +36,7 @@ pub(all) suberror Refused {
   Escape(at~ : Int32)
   /// The payload is not base64, at this offset into it.
   Base64(at~ : Int32)
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Refused with Eq::{equal, not_equal}

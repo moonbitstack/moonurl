@@ -5,9 +5,10 @@
 /// The name–value pairs of an `application/x-www-form-urlencoded` string: a URL's
 /// query, or a form body (WHATWG URL Standard §5). Order and repeated names are
 /// kept, as `URLSearchParams` and Go's `url.Values` keep them.
+#derive(Eq, Debug)
 pub struct Query {
   priv pairs : Array[(String, String)]
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Query with Eq::{equal, not_equal}
@@ -18,12 +19,13 @@ pub extend Query with Debug::{to_repr}
 ///|
 /// What a decode accepts. Past either bound the whole input is refused rather
 /// than cut short, so a handler never acts on part of a form.
+#derive(Eq, Debug)
 pub(all) struct Limits {
   /// Most pairs.
   pairs : Int32
   /// Most bytes in one pair as it arrives, still encoded.
   size : Int32
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Limits with Eq::{equal, not_equal}

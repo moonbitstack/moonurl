@@ -4,6 +4,7 @@
 ///|
 /// What UTS 46 leaves to the caller. Its two presets cover the two callers
 /// there are: a browser reading a host name out of a link, and a zone file.
+#derive(Eq, Debug)
 pub(all) struct Options {
   /// Treat ß, ς and the two joiners the way IDNA2003 did. Deprecated by the
   /// standard, and kept because some names still exist in that spelling.
@@ -24,7 +25,7 @@ pub(all) struct Options {
   /// refusing it. The URL standard asks for this: a browser keeps a label it
   /// cannot read rather than dropping the host.
   ignore_invalid_punycode : Bool
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Options with Eq::{equal, not_equal}
@@ -58,6 +59,7 @@ pub let strict : Options = {
 
 ///|
 /// Why a name is not the name the standard would accept.
+#derive(Eq, Debug)
 pub(all) enum Fault {
   /// A label that is not in NFC, begins with a combining mark, or begins with
   /// `xn--` where that prefix is not allowed (V1, V4, V6).
@@ -81,7 +83,7 @@ pub(all) enum Fault {
   Empty(at~ : Int32)
   /// A name or label past its length limit (A4_1, A4_2).
   Length(limit~ : Int32, got~ : Int32)
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Fault with Eq::{equal, not_equal}
@@ -93,12 +95,13 @@ pub extend Fault with Debug::{to_repr}
 /// A name as far as the standard could convert it, and what it objected to on
 /// the way. Conversion does not stop at the first error, so a caller that
 /// wants to show the user what is wrong has the rest of the name too.
+#derive(Eq, Debug)
 pub(all) struct Outcome {
   /// The converted name.
   name : String
   /// Everything wrong with it, in no particular order.
   errors : Array[Fault]
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Outcome with Eq::{equal, not_equal}

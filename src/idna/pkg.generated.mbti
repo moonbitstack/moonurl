@@ -19,15 +19,17 @@ pub fn to_ascii(StringView, options? : Options) -> Outcome
 pub fn to_unicode(StringView, options? : Options) -> Outcome
 
 // Errors
+#derive(Eq, @debug.Debug)
 pub(all) suberror Refused {
   Digit(at~ : Int32)
   Overflow(at~ : Int32)
-} derive(Eq, @debug.Debug)
+}
 pub fn Refused::equal(Self, Self) -> Bool
 pub fn Refused::not_equal(Self, Self) -> Bool
 pub fn Refused::to_repr(Self) -> @debug.Repr
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) enum Fault {
   Shape(at~ : Int32)
   Hyphen(at~ : Int32)
@@ -39,11 +41,12 @@ pub(all) enum Fault {
   Bidi(at~ : Int32)
   Empty(at~ : Int32)
   Length(limit~ : Int32, got~ : Int32)
-} derive(Eq, @debug.Debug)
+}
 pub fn Fault::equal(Self, Self) -> Bool
 pub fn Fault::not_equal(Self, Self) -> Bool
 pub fn Fault::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) struct Options {
   transitional : Bool
   check_hyphens : Bool
@@ -52,15 +55,16 @@ pub(all) struct Options {
   std3 : Bool
   dns_length : Bool
   ignore_invalid_punycode : Bool
-} derive(Eq, @debug.Debug)
+}
 pub fn Options::equal(Self, Self) -> Bool
 pub fn Options::not_equal(Self, Self) -> Bool
 pub fn Options::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) struct Outcome {
   name : String
   errors : Array[Fault]
-} derive(Eq, @debug.Debug)
+}
 pub fn Outcome::equal(Self, Self) -> Bool
 pub fn Outcome::is_ok(Self) -> Bool
 pub fn Outcome::not_equal(Self, Self) -> Bool

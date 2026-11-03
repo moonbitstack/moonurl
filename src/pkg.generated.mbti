@@ -29,6 +29,7 @@ pub fn unescape(BytesView) -> Bytes
 pub fn unescape_text(StringView) -> String
 
 // Errors
+#derive(Eq, @debug.Debug)
 pub(all) suberror Refused {
   Port(at~ : Int32)
   Host(at~ : Int32)
@@ -37,12 +38,13 @@ pub(all) suberror Refused {
   Scheme(at~ : Int32)
   Pairs(limit~ : Int32)
   Pair(limit~ : Int32, got~ : Int32)
-} derive(Eq, @debug.Debug)
+}
 pub fn Refused::equal(Self, Self) -> Bool
 pub fn Refused::not_equal(Self, Self) -> Bool
 pub fn Refused::to_repr(Self) -> @debug.Repr
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) enum Kind {
   Bare
   Host
@@ -52,23 +54,25 @@ pub(all) enum Kind {
   Query
   Fragment
   Whole
-} derive(Eq, @debug.Debug)
+}
 pub fn Kind::equal(Self, Self) -> Bool
 pub fn Kind::not_equal(Self, Self) -> Bool
 pub fn Kind::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) struct Limits {
   pairs : Int32
   size : Int32
-} derive(Eq, @debug.Debug)
+}
 pub fn Limits::equal(Self, Self) -> Bool
 pub fn Limits::new(pairs? : Int32, size? : Int32) -> Self
 pub fn Limits::not_equal(Self, Self) -> Bool
 pub fn Limits::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub struct Query {
   // private fields
-} derive(Eq, @debug.Debug)
+}
 pub fn Query::add(Self, String, String) -> Unit
 pub fn Query::decode(BytesView, limits? : Limits) -> Self raise Refused
 pub fn Query::encode(Self) -> String
@@ -83,14 +87,16 @@ pub fn Query::set(Self, String, String) -> Unit
 pub fn Query::to_repr(Self) -> @debug.Repr
 pub fn Query::values(Self, StringView) -> Array[String]
 
+#derive(Eq, @debug.Debug)
 pub(all) enum Syntax {
   Rfc3986
   Whatwg
-} derive(Eq, @debug.Debug)
+}
 pub fn Syntax::equal(Self, Self) -> Bool
 pub fn Syntax::not_equal(Self, Self) -> Bool
 pub fn Syntax::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) struct Url {
   scheme : String?
   userinfo : String?
@@ -99,7 +105,7 @@ pub(all) struct Url {
   path : String
   query : String?
   fragment : String?
-} derive(Eq, @debug.Debug)
+}
 pub fn Url::authority(Self) -> String?
 pub fn Url::decode(StringView, syntax? : Syntax, base? : Self) -> Self raise Refused
 pub fn Url::encode(Self) -> String

@@ -35,12 +35,13 @@ const BOUND : Int32 = 0x3FFFFFFF
 
 ///|
 /// Why a label is not Punycode.
+#derive(Eq, Debug)
 pub(all) suberror Refused {
   /// A character that is not a Punycode digit, at this offset.
   Digit(at~ : Int32)
   /// A number that runs past the code space, at this offset.
   Overflow(at~ : Int32)
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Refused with Eq::{equal, not_equal}

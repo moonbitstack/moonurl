@@ -7,6 +7,7 @@
 ///
 /// `&` is ordinary inside a path and a separator inside a query. The grammar
 /// answers that, not the caller.
+#derive(Eq, Debug)
 pub(all) enum Kind {
   /// Unreserved only — everything else is escaped. This is what one piece of a
   /// query goes out as, since `&` and `=` inside a value must not read as the
@@ -28,7 +29,7 @@ pub(all) enum Kind {
   /// included. What a `Location` header carries — the value is already a URI,
   /// and only the octets no URI may contain need escaping.
   Whole
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Kind with Eq::{equal, not_equal}
@@ -50,6 +51,7 @@ pub let kind : Kind = Bare
 ///
 /// Fields stay percent-encoded. Decoding on the way in would lose the difference
 /// between a `/` that separates two segments and a `%2F` inside one.
+#derive(Eq, Debug)
 pub(all) struct Url {
   scheme : String?
   userinfo : String?
@@ -58,7 +60,7 @@ pub(all) struct Url {
   path : String
   query : String?
   fragment : String?
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Url with Eq::{equal, not_equal}
@@ -70,6 +72,7 @@ pub extend Url with Debug::{to_repr}
 /// Why a string is not a URI reference. Only the authority can fail: §B splits
 /// any string at all into the five top-level components, and does not split
 /// that one.
+#derive(Eq, Debug)
 pub(all) suberror Refused {
   /// A port that is not digits, at this offset.
   Port(at~ : Int32)
@@ -86,7 +89,7 @@ pub(all) suberror Refused {
   Pairs(limit~ : Int32)
   /// One form-encoded pair longer than the limit, in octets.
   Pair(limit~ : Int32, got~ : Int32)
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Refused with Eq::{equal, not_equal}
@@ -240,6 +243,7 @@ pub fn normalize_escapes(text : StringView) -> String {
 /// Which grammar decides what a string means. The two disagree about almost
 /// everything a browser has to get right, and both are in the standard library
 /// of every language that talks to the web.
+#derive(Eq, Debug)
 pub(all) enum Syntax {
   /// RFC 3986: the generic grammar, where `http://h:80/` keeps its port and
   /// `http:g` is a URI with scheme `http`.
@@ -248,7 +252,7 @@ pub(all) enum Syntax {
   /// backslashes as soliduses, IPv4 in any of its spellings, and a host name
   /// run through IDNA.
   Whatwg
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Syntax with Eq::{equal, not_equal}

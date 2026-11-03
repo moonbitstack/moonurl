@@ -4,6 +4,7 @@
 ///|
 /// What a variable holds (RFC 6570 §2.3): one string, a list of them, or a set
 /// of named ones.
+#derive(Eq, Debug)
 pub(all) enum Value {
   /// A string.
   Text(String)
@@ -11,7 +12,7 @@ pub(all) enum Value {
   List(Array[String])
   /// An associative array: names with values, expanded in order.
   Pairs(Array[(String, String)])
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Value with Eq::{equal, not_equal}
@@ -45,6 +46,7 @@ pub impl Variables for Map[String, Value] with fn get(self, name) {
 
 ///|
 /// Why a string is not a template.
+#derive(Eq, Debug)
 pub(all) suberror Refused {
   /// A `{` that is never closed, or a `}` that opens nothing, at this offset.
   Bracket(at~ : Int32)
@@ -54,7 +56,7 @@ pub(all) suberror Refused {
   Operator(at~ : Int32, got~ : Char)
   /// A `:N` prefix that is not one to four digits from 1 to 9999.
   Length(at~ : Int32, limit~ : Int32, got~ : Int32)
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Refused with Eq::{equal, not_equal}
@@ -64,6 +66,7 @@ pub extend Refused with Debug::{to_repr}
 
 ///|
 /// The eight operators of §2.2, and the empty one that is no operator at all.
+#derive(Eq, Debug)
 priv enum Operator {
   Simple
   Reserved
@@ -73,31 +76,34 @@ priv enum Operator {
   Parameter
   Query
   Continuation
-} derive(Eq, Debug)
+}
 
 ///|
 /// One variable of an expression: its name, and the modifier the fourth level
 /// adds to it.
+#derive(Eq, Debug)
 priv struct Variable {
   name : String
   /// The length a `:N` prefix asks for, in characters.
   prefix : Int32?
   /// Whether a `*` asks for the value to be expanded in full.
   explode : Bool
-} derive(Eq, Debug)
+}
 
 ///|
 /// A literal, or an expression to fill in.
+#derive(Eq, Debug)
 priv enum Part {
   Literal(String)
   Expression(Operator, Array[Variable])
-} derive(Eq, Debug)
+}
 
 ///|
 /// A template (RFC 6570 §2), kept as the pieces it was read into.
+#derive(Eq, Debug)
 pub struct Template {
   priv parts : Array[Part]
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Template with Eq::{equal, not_equal}

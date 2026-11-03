@@ -40,6 +40,7 @@ fn empty_parts() -> Parts {
 
 ///|
 /// The states of the parser, named as the standard names them.
+#derive(Eq)
 priv enum State {
   SchemeStart
   Scheme
@@ -62,7 +63,7 @@ priv enum State {
   OpaquePath
   Query
   Fragment
-} derive(Eq)
+}
 
 // --------------------------------------------------------- percent encoding
 
