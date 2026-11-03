@@ -84,8 +84,13 @@ FIELDS = [
 def url_cases():
     cases = []
     for entry in fetch("urltestdata.json"):
-        if not isinstance(entry, dict) or "relativeTo" in entry:
+        if not isinstance(entry, dict):
             continue
+        # A `relativeTo` row states that the input is relative and, with no
+        # base, does not parse at all; the marker names the base the
+        # single-argument `URL` constructor test would supply, and every such
+        # row here expects failure without one. Reading it as an ordinary
+        # failure row keeps them in the suite instead of dropping them.
         base = plain(entry["base"] or "")
         source = plain(entry["input"])
         if entry.get("failure"):
