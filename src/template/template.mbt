@@ -739,7 +739,10 @@ fn captured(
           } else {
             return false
           }
-        None => piece
+        // `;a` writes no `=`: the whole piece is the name, and the value it
+        // carries is empty. Reading the piece as the value would put the name
+        // in the binding and lose the difference.
+        None => if piece == spec.name[:] { ""[:] } else { return false }
       }
     } else {
       piece
