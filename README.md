@@ -159,6 +159,22 @@ is the same thing, read the same way: `url.params()`.
 
 Errors are one enum per package — `Refused` — and every offset in one is `at`.
 
+## Conformance
+
+The result is what the standards' own vectors ask for: every expansion RFC 6570
+§3.2 prints, every row of the URL Standard's parsing, setter and host-name
+data, and the UTS 46 conformance rows.
+
+<!-- conformance:start -->
+| Vector | Rows |
+|:--|--:|
+| RFC 6570 §3.2 expansions | 70 |
+| `urltestdata.json` | 896 |
+| `setters_tests.json` | 278 |
+| `toascii.json` | 87 |
+| `IdnaTestV2.txt` | 6389 |
+<!-- conformance:end -->
+
 ## Limits
 
 `Query::decode` bounds a form body; `Url` and `Template` do not bound their
