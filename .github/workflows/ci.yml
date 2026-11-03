@@ -58,6 +58,10 @@ jobs:
         run: |
           moon fmt && git diff --exit-code
 
+      - name: README conformance table is current
+        if: runner.os == 'Linux'
+        run: python3 scripts/count_cases.py --check
+
       - name: interfaces are up to date
         run: |
           moon info --target all && git diff --exit-code
