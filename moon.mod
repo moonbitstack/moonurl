@@ -1,6 +1,6 @@
 name = "moonbitstack/moonurl"
 
-version = "0.2.3"
+version = "0.2.4"
 
 readme = "README.md"
 
@@ -15,11 +15,14 @@ keywords = [
   "whatwg",
   "idna",
   "punycode",
+  "uts46",
   "uri-template",
   "rfc6570",
   "percent-encoding",
   "data-url",
   "urlencoded",
+  "url-parser",
+  "query-string",
   "moonbit",
 ]
 
