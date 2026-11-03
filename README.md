@@ -153,11 +153,12 @@ is the same thing, read the same way: `url.params()`.
 | `idna::to_ascii` / `to_unicode` | `Outcome` | A name in ASCII, or in Unicode |
 | `idna::encode` / `decode` | `String raise Refused` | One label of Punycode |
 | `Template::decode(text)` | `Template raise Refused` | Read a template |
-| `Template::expand(values)` | `String` | Fill it in |
+| `Template::expand(values)` | `String raise Refused` | Fill it in |
 | `Template::capture(uri)` | `Array[(String, String)]?` | Read a URI back into names |
 | `dataurl::Url::decode(text)` | `Url raise Refused` | A data URL |
 
-Errors are one enum per package — `Refused` — and every offset in one is `at`.
+Errors are one enum per package — `Refused` — with an offset named `at`, or the
+variable's name where a prefix is one a list or a map cannot take.
 
 ## Conformance
 

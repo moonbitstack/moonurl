@@ -45,7 +45,7 @@ pub impl Variables for Map[String, Value] with fn get(self, name) {
 }
 
 ///|
-/// Why a string is not a template.
+/// Why a template cannot be read, or a value cannot be filled in.
 #derive(Eq, Debug)
 pub(all) suberror Refused {
   /// A `{` that is never closed, or a `}` that opens nothing, at this offset.
