@@ -14,6 +14,7 @@ pub(all) suberror Refused {
   Syntax(at~ : Int32, got~ : Char)
   Operator(at~ : Int32, got~ : Char)
   Length(at~ : Int32, limit~ : Int32, got~ : Int32)
+  Composite(name~ : String)
 }
 pub fn Refused::equal(Self, Self) -> Bool
 pub fn Refused::not_equal(Self, Self) -> Bool
@@ -28,7 +29,7 @@ pub fn Template::capture(Self, StringView) -> Array[(String, String)]?
 pub fn Template::decode(StringView) -> Self raise Refused
 pub fn Template::encode(Self) -> String
 pub fn Template::equal(Self, Self) -> Bool
-pub fn[T : Variables] Template::expand(Self, T) -> String
+pub fn[T : Variables] Template::expand(Self, T) -> String raise Refused
 pub fn Template::not_equal(Self, Self) -> Bool
 pub fn Template::to_repr(Self) -> @debug.Repr
 

@@ -40,6 +40,8 @@ fn main raise {
       @template.Refused::Operator(at~, got~) => "'\{got}' is reserved, at \{at}"
       @template.Refused::Length(at~, limit~, got~) =>
         "\{got} is past \{limit}, at \{at}"
+      @template.Refused::Composite(name~) =>
+        "a prefix does not apply to the list or map \{name}"
     }
     println("\{text}  ->  \{outcome}")
   }

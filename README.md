@@ -161,14 +161,14 @@ Errors are one enum per package — `Refused` — and every offset in one is `at
 
 ## Conformance
 
-The result is what the standards' own vectors ask for: every expansion RFC 6570
-§3.2 prints, every row of the URL Standard's parsing, setter and host-name
+The result is what the standards' own vectors ask for: every row of RFC 6570's
+own test corpus, every row of the URL Standard's parsing, setter and host-name
 data, and the UTS 46 conformance rows.
 
 <!-- conformance:start -->
 | Vector | Rows |
 |:--|--:|
-| RFC 6570 §3.2 expansions | 70 |
+| RFC 6570 `uritemplate-test` | 270 |
 | `urltestdata.json` | 896 |
 | `setters_tests.json` | 278 |
 | `toascii.json` | 87 |

@@ -56,6 +56,9 @@ pub(all) suberror Refused {
   Operator(at~ : Int32, got~ : Char)
   /// A `:N` prefix that is not one to four digits from 1 to 9999.
   Length(at~ : Int32, limit~ : Int32, got~ : Int32)
+  /// A `:N` prefix on a variable bound to a list or a map, where the standard
+  /// says the modifier does not apply (RFC 6570 §2.4.1).
+  Composite(name~ : String)
 }
 
 ///|
@@ -215,6 +218,9 @@ fn varspec(
   let n = input.length()
   let mut i = start
   let name = StringBuilder()
+  // A dot, or the start, must be followed by a character of a segment: this
+  // rejects a leading dot, a trailing one and two in a row.
+  let mut after_dot = true
   while i < n {
     let character = input[i]
     if character == ':' ||
@@ -223,8 +229,14 @@ fn varspec(
       character == '}' {
       break
     }
-    if character == '.' || character == '_' || varchar(character) {
+    if character == '.' {
+      guard !after_dot else { raise Syntax(at=i, got=character) }
+      name.write_char('.')
+      after_dot = true
+      i += 1
+    } else if character == '_' || varchar(character) {
       name.write_char(character)
+      after_dot = false
       i += 1
     } else if character == '%' {
       guard i + 2 < n &&
@@ -235,17 +247,24 @@ fn varspec(
       name.write_char('%')
       name.write_char(input[i + 1])
       name.write_char(input[i + 2])
+      after_dot = false
       i += 3
     } else {
       raise Syntax(at=i, got=character)
     }
   }
-  guard !name.is_empty() else { raise Syntax(at=i, got=input[i]) }
+  guard !after_dot else {
+    raise Syntax(at=i, got=if i < n { input[i] } else { '}' })
+  }
   // The prefix modifier is for the operators that expand a scalar, and does
   // not go with `*`.
   let mut prefix = None
   if i < n && input[i] == ':' {
     i += 1
+    // `max-length` starts with a non-zero digit (§2.4.1).
+    guard i < n && input[i] >= '1' && input[i] <= '9' else {
+      raise Length(at=i, limit=9999, got=0)
+    }
     let mut digits = 0
     let mut length = 0
     while i < n && input[i] >= '0' && input[i] <= '9' {
@@ -255,9 +274,6 @@ fn varspec(
       guard digits <= 4 && length <= 9999 else {
         raise Length(at=i, limit=9999, got=length)
       }
-    }
-    guard digits > 0 && length > 0 else {
-      raise Length(at=i, limit=9999, got=length)
     }
     prefix = Some(length)
   }
@@ -281,7 +297,7 @@ fn literal_char(character : Char) -> Bool {
   }
   if point < 0x7F {
     return match character {
-      '"' | '\'' | '<' | '>' | '\\' | '^' | '`' | '{' | '|' | '}' => false
+      '"' | '<' | '>' | '\\' | '^' | '`' | '{' | '|' | '}' => false
       _ => true
     }
   }
@@ -388,11 +404,11 @@ fn prefix_char(operator : Operator) -> Char? {
 pub fn[T : Variables] Template::expand(
   self : Template,
   variables : T,
-) -> String {
+) -> String raise Refused {
   let out = StringBuilder()
   for part in self.parts {
     match part {
-      Literal(text) => out.write_string(text)
+      Literal(text) => out.write_string(encode_literal(text))
       Expression(operator, specs) => {
         let pieces : Array[String] = []
         for spec in specs {
@@ -427,7 +443,7 @@ fn expanded(
   operator : Operator,
   spec : Variable,
   value : Value,
-) -> Array[String] {
+) -> Array[String] raise Refused {
   let pieces : Array[String] = []
   let named = named(operator)
   let reserved = operator == Reserved || operator == Fragment
@@ -448,7 +464,15 @@ fn expanded(
         pieces.push(encoded)
       }
     }
-    List(items) =>
+    List(items) => {
+      // A prefix is for a scalar; a list has no first `N` characters to take
+      // (§2.4.1). An empty list contributes nothing at all (§3.2.1).
+      if spec.prefix is Some(_) {
+        raise Composite(name=spec.name)
+      }
+      if items.length() == 0 {
+        return pieces
+      }
       if spec.explode {
         for item in items {
           let encoded = encode(item[:], reserved~)
@@ -461,9 +485,6 @@ fn expanded(
           } else {
             pieces.push(encoded)
           }
-        }
-        if items.length() == 0 && named {
-          pieces.push(spec.name + empty_suffix(operator))
         }
       } else {
         let joined = StringBuilder()
@@ -484,7 +505,14 @@ fn expanded(
           pieces.push(text)
         }
       }
+    }
     Pairs(pairs) => {
+      if spec.prefix is Some(_) {
+        raise Composite(name=spec.name)
+      }
+      if pairs.length() == 0 {
+        return pieces
+      }
       let joined = StringBuilder()
       if spec.explode {
         for pair in pairs {
@@ -583,9 +611,11 @@ fn encode(text : StringView, reserved~ : Bool) -> String {
   while i < n {
     let character = input[i]
     let point = character.to_int()
-    // An escape somebody else wrote is already an escape; only its absence
-    // would need one.
-    if point == 0x25 &&
+    // A reserved expansion keeps an escape somebody else wrote; a simple one
+    // encodes its `%` like any other character that may not stand alone, so a
+    // value that already looks encoded goes out double-encoded (§3.2.1).
+    if reserved &&
+      point == 0x25 &&
       i + 2 < n &&
       hex(input[i + 1].to_int()) &&
       hex(input[i + 2].to_int()) {
@@ -596,6 +626,46 @@ fn encode(text : StringView, reserved~ : Bool) -> String {
       continue
     }
     if unreserved(point) || (reserved && delimiter(point)) {
+      out.write_char(character)
+    } else {
+      for byte in @utf8.encode(one(character)[:]) {
+        let value = byte.to_int()
+        out.write_char('%')
+        out.write_char(hex_char(value >> 4))
+        out.write_char(hex_char(value & 0xF))
+      }
+    }
+    i += 1
+  }
+  out.to_string()
+}
+
+///|
+/// A literal as it goes into the URI (§2.1): the characters a URI allows stand
+/// as they are, an escape somebody wrote stays as it is, and anything else — in
+/// practice a character past ASCII — becomes its UTF-8 escapes.
+fn encode_literal(text : String) -> String {
+  let input : Array[Char] = []
+  for character in text {
+    input.push(character)
+  }
+  let out = StringBuilder()
+  let n = input.length()
+  let mut i = 0
+  while i < n {
+    let character = input[i]
+    let point = character.to_int()
+    if point == 0x25 &&
+      i + 2 < n &&
+      hex(input[i + 1].to_int()) &&
+      hex(input[i + 2].to_int()) {
+      out.write_char(character)
+      out.write_char(input[i + 1])
+      out.write_char(input[i + 2])
+      i += 3
+      continue
+    }
+    if point < 0x80 {
       out.write_char(character)
     } else {
       for byte in @utf8.encode(one(character)[:]) {
