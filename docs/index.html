@@ -227,7 +227,7 @@ q.encode()        <span class="c">// "a=1&amp;a=3&amp;b=2"</span>
             <h3>moonurl/template <span class="tag">RFC 6570</span></h3>
             <div class="note">Holes named and filled: simple and reserved expansions, label, path and parameter operators, prefixes and exploded lists and pairs.</div>
             <details class="api-item" open><summary><span class="pm">+</span>Template::decode(text) -&gt; Template raise Refused</summary><div class="desc">Read a template.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Template::expand(values) -&gt; String</summary><div class="desc">Fill it in. Any <code>Variables</code> works; a <code>Map[String, Value]</code> already does.</div></details>
+            <details class="api-item"><summary><span class="pm">+</span>Template::expand(values) -&gt; String raise Refused</summary><div class="desc">Fill it in. Any <code>Variables</code> works; a <code>Map[String, Value]</code> already does. A <code>:N</code> prefix on a list or map is refused.</div></details>
             <details class="api-item"><summary><span class="pm">+</span>Template::capture(uri) -&gt; Array[(String, String)]?</summary><div class="desc">Read a URI back into the names that made it.</div></details>
             <details class="api-item"><summary><span class="pm">+</span>Value :: Text / List / Pairs</summary><div class="desc">A scalar, a list, or a list of pairs fed to the holes.</div></details>
           </div>
@@ -241,7 +241,7 @@ q.encode()        <span class="c">// "a=1&amp;a=3&amp;b=2"</span>
           </div>
 
           <div class="foot">
-            <span>Errors are one enum per package — <code>Refused</code> — every offset named <code>at</code>.</span>
+            <span>Errors are one enum per package — <code>Refused</code> — with an offset named <code>at</code>, or the variable's name where a prefix is one a list or a map cannot take.</span>
             <span><a href="https://github.com/moonbitstack/moonurl" target="_blank" rel="noopener">Source on GitHub &nearr;</a></span>
           </div>
         </div>

@@ -62,12 +62,15 @@ def numbers():
     url = read("src/vectors_url_test.mbt")
     host = read("src/vectors_host_test.mbt")
     idna = read("src/idna/vectors_test.mbt")
-    template = read("src/template/template_test.mbt")
+    template = read("src/template/vectors_test.mbt")
+    template_cases = re.search(r"// cases: (\d+)", template)
+    if not template_cases:
+        raise SystemExit("no case count in src/template/vectors_test.mbt")
     rows = 0
     for batch in re.findall(r"let\s+(uts46_\d+)\s*:", idna):
         rows += array_count(idna, batch)
     return [
-        ("RFC 6570 §3.2 expansions", len(re.findall(r'expand\("', template))),
+        ("RFC 6570 `uritemplate-test`", int(template_cases.group(1))),
         ("`urltestdata.json`", array_count(url, "url_cases")),
         ("`setters_tests.json`", array_count(url, "setter_cases")),
         ("`toascii.json`", array_count(host, "host_cases")),

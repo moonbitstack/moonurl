@@ -153,22 +153,23 @@ is the same thing, read the same way: `url.params()`.
 | `idna::to_ascii` / `to_unicode` | `Outcome` | A name in ASCII, or in Unicode |
 | `idna::encode` / `decode` | `String raise Refused` | One label of Punycode |
 | `Template::decode(text)` | `Template raise Refused` | Read a template |
-| `Template::expand(values)` | `String` | Fill it in |
+| `Template::expand(values)` | `String raise Refused` | Fill it in |
 | `Template::capture(uri)` | `Array[(String, String)]?` | Read a URI back into names |
 | `dataurl::Url::decode(text)` | `Url raise Refused` | A data URL |
 
-Errors are one enum per package — `Refused` — and every offset in one is `at`.
+Errors are one enum per package — `Refused` — with an offset named `at`, or the
+variable's name where a prefix is one a list or a map cannot take.
 
 ## Conformance
 
-The result is what the standards' own vectors ask for: every expansion RFC 6570
-§3.2 prints, every row of the URL Standard's parsing, setter and host-name
+The result is what the standards' own vectors ask for: every row of RFC 6570's
+own test corpus, every row of the URL Standard's parsing, setter and host-name
 data, and the UTS 46 conformance rows.
 
 <!-- conformance:start -->
 | Vector | Rows |
 |:--|--:|
-| RFC 6570 §3.2 expansions | 70 |
+| RFC 6570 `uritemplate-test` | 270 |
 | `urltestdata.json` | 896 |
 | `setters_tests.json` | 278 |
 | `toascii.json` | 87 |

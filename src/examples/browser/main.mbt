@@ -79,6 +79,7 @@ fn template_fault(e : @template.Refused) -> String {
     Syntax(at~, got~) => "'\{got}' at \{at} is not allowed in an expression"
     Operator(at~, got~) => "'\{got}' at \{at} is a reserved operator"
     Length(at~, limit~, got~) => "prefix \{got} at \{at} is over \{limit}"
+    Composite(name~) => "a prefix does not apply to the list or map \{name}"
   }
 }
 
@@ -95,7 +96,10 @@ pub fn expand(template : String, vars : String) -> String {
   let values = variables(@json.parse(vars)) catch {
     e => return refused("variables: \{e}")
   }
-  let json : Json = { "ok": true, "result": Json::string(t.expand(values)) }
+  let expanded = t.expand(values) catch {
+    e => return refused(template_fault(e))
+  }
+  let json : Json = { "ok": true, "result": Json::string(expanded) }
   json.stringify()
 }
 
