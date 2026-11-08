@@ -1,3 +1,10 @@
+<p align="right">
+  <a href="https://moonbitstack.github.io/moonurl/">home</a> &nbsp;·&nbsp;
+  <a href="https://moonbitstack.github.io/moonurl/#guide">guide</a> &nbsp;·&nbsp;
+  <a href="https://moonbitstack.github.io/moonurl/#api">api</a> &nbsp;·&nbsp;
+  <a href="https://mooncakes.io/docs/moonbitstack/moonurl">mooncakes</a>
+</p>
+
 # moonurl
 
 URLs for MoonBit, read the way a browser reads them and the way RFC 3986 says
@@ -6,22 +13,18 @@ to read them: one type, two grammars. Host names are internationalised, so
 fill in and read back. Form bodies and data URLs ride on the same percent
 coding. No sockets.
 
-<!-- nocheck -->
 ```moonbit
 // A string a browser and a generic parser disagree about.
-@moonurl.Url::decode("HTTP://EXAMPLE.test:80/a/../b").encode()
-// "HTTP://EXAMPLE.test:80/a/../b"
+let generic = @moonurl.Url::decode("HTTP://EXAMPLE.test:80/a/../b")
+assert_eq(generic.encode(), "HTTP://EXAMPLE.test:80/a/../b")
 
-@moonurl.Url::decode("HTTP://EXAMPLE.test:80/a/../b", syntax=@moonurl.Whatwg).encode()
-// "http://example.test/b"
+let browser = @moonurl.Url::decode("HTTP://EXAMPLE.test:80/a/../b", syntax=@moonurl.Whatwg)
+assert_eq(browser.encode(), "http://example.test/b")
 
 // Host names, in and out of ASCII.
-@moonurl.domain("MÜNCHEN.example")                       // "xn--mnchen-3ya.example"
-@moonurl.Url::decode("http://192.0x00A80001/", syntax=@moonurl.Whatwg).host // Some("192.168.0.1")
-
-// A template filled in, and a URI read back.
-@template.Template::decode("/users/{id}{?page}").expand(values)   // "/users/42?page=2"
-@template.Template::decode("/users/{id}{?page}").capture("/users/42?page=2")
+assert_eq(@moonurl.domain("MÜNCHEN.example"), "xn--mnchen-3ya.example")
+let numeric = @moonurl.Url::decode("http://192.0x00A80001/", syntax=@moonurl.Whatwg)
+assert_eq(numeric.host, Some("192.168.0.1"))
 ```
 
 `moon run src/examples/tour` takes a reference apart, resolves the RFC 3986
@@ -52,14 +55,13 @@ scheme means. A browser has to know: `http` has a port and `file` does not,
 produce the same `Url`, so a program that has to accept what people type can
 switch grammar for one string and keep working with the result.
 
-<!-- nocheck -->
 ```moonbit
 let url = @moonurl.Url::decode("https://leo:pw@example.test:8443/a/b?x=1#top")
-url.scheme      // Some("https")
-url.host        // Some("example.test")
-url.port        // Some(8443)
-url.query       // Some("x=1")
-url.origin()    // "https://example.test:8443"
+assert_eq(url.scheme, Some("https"))
+assert_eq(url.host, Some("example.test"))
+assert_eq(url.port, Some(8443))
+assert_eq(url.query, Some("x=1"))
+assert_eq(url.origin(), "https://example.test:8443")
 ```
 
 `syntax` picks the grammar, and `rfc3986` is what it defaults to, so nothing
@@ -85,15 +87,15 @@ converts *and* what it objected to, because a browser shows the rest of a name
 it cannot finish converting. `moonurl.domain` is the one a URL parser uses: an
 ASCII string is taken as it stands, and everything else goes through UTS 46.
 
-<!-- nocheck -->
 ```moonbit
 let outcome = @idna.to_ascii("münchen.example")
-outcome.name      // "xn--mnchen-3ya.example"
-outcome.is_ok()   // true
+assert_eq(outcome.name, "xn--mnchen-3ya.example")
+assert_eq(outcome.is_ok(), true)
 
 // Two settings, for the two callers there are.
-@idna.to_ascii("Faß.de").name                                  // "xn--fa-hia.de"
-@idna.to_ascii("Faß.de", options={ ..@idna.options, transitional: true }).name // "fass.de"
+assert_eq(@idna.to_ascii("Faß.de").name, "xn--fa-hia.de")
+let transitional = { ..@idna.options, transitional: true }
+assert_eq(@idna.to_ascii("Faß.de", options=transitional).name, "fass.de")
 ```
 
 ## URI templates
@@ -103,15 +105,25 @@ simple and reserved expansions, the label, path and parameter operators,
 prefixes and exploded lists and pairs. `capture` goes the other way, reading a
 URI into the names that made it.
 
-<!-- nocheck -->
 ```moonbit
 let values : Map[String, @template.Value] = Map([])
 values.set("list", @template.Value::List(["red", "green"]))
 values.set("q", @template.Value::Text("moon bit"))
 
-@template.Template::decode("{/list*}{?q}").expand(values)   // "/red/green?q=moon%20bit"
-@template.Template::decode("{/list*}{?q}").capture("/red/green?q=moon%20bit")
+let list = @template.Template::decode("{/list*}{?q}")
+assert_eq(list.expand(values), "/red/green?q=moon%20bit")
+
+let users = @template.Template::decode("/users/{id}{?page}")
+let fields : Map[String, @template.Value] = Map([])
+fields.set("id", @template.Value::Text("42"))
+fields.set("page", @template.Value::Text("2"))
+assert_eq(users.expand(fields), "/users/42?page=2")
+assert_eq(users.capture("/users/42?page=2"), Some([("id", "42"), ("page", "2")]))
 ```
+
+`capture` returns nothing when the URI does not match, and gives an exploded
+list only its first value: `/red/green` says where the list started, not where
+it stopped.
 
 Values come from anything that implements `Variables`; a `Map[String, Value]`
 already does, and so can a request, a configuration record or a database row.
@@ -123,10 +135,30 @@ already does, and so can a request, a configuration record or a database row.
 letters, digits and `*-._`, so `~` goes out as `%7E` although RFC 3986 leaves it
 alone.
 
+```moonbit
+let form = @moonurl.Query::decode(b"a=1&b=2&a=3")
+assert_eq(form.get("a"), Some("1"))
+assert_eq(form.values("a"), ["1", "3"])
+assert_eq(form.encode(), "a=1&b=2&a=3")
+```
+
 `Query::decode` refuses the whole input past its `limits`: a thousand pairs of
 up to 1 MiB each by default. Change one with `Limits::new(pairs=100)` or
 `{ ..@moonurl.limits, pairs: 100 }`; the two are the same value. A URL's query
 is the same thing, read the same way: `url.params()`.
+
+## Data URLs
+
+A data URL carries the representation inside the reference: the media type, then
+either the octets escaped or the same octets in base64.
+
+```moonbit
+let greeting = @dataurl.Url::decode("data:text/plain,Hi%20there")
+assert_eq(greeting.kind, "text/plain")
+assert_eq(greeting.data, b"Hi there")
+assert_eq(greeting.charset(), "US-ASCII")
+assert_eq(greeting.encode(base64=true), "data:text/plain;base64,SGkgdGhlcmU=")
+```
 
 ## Interface
 
