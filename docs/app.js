@@ -7,9 +7,11 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ---------------- Theme toggle ------------------------------------- */
+  /* The choice lasts the visit, not the machine: a reader who switched to see
+     one page should find the system's preference again next time. */
   const themeToggle = document.getElementById("theme-toggle");
   const stored = (function () {
-    try { return localStorage.getItem("moonurl-theme"); } catch (e) { return null; }
+    try { return sessionStorage.getItem("moonurl-theme"); } catch (e) { return null; }
   })();
   if (stored === "dark") root.classList.add("dark");
   else if (stored === "light") root.classList.add("light");
@@ -21,10 +23,10 @@
          window.matchMedia("(prefers-color-scheme: dark)").matches);
       if (isDark) {
         root.classList.remove("dark"); root.classList.add("light");
-        try { localStorage.setItem("moonurl-theme", "light"); } catch (e) {}
+        try { sessionStorage.setItem("moonurl-theme", "light"); } catch (e) {}
       } else {
         root.classList.remove("light"); root.classList.add("dark");
-        try { localStorage.setItem("moonurl-theme", "dark"); } catch (e) {}
+        try { sessionStorage.setItem("moonurl-theme", "dark"); } catch (e) {}
       }
       themeToggle.classList.remove("spin");
       // force reflow so the rotation animation replays each click
