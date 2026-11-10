@@ -117,6 +117,14 @@ pub fn Outcome::is_ok(self : Outcome) -> Bool {
 
 ///|
 /// A name as ASCII, the form that goes on the wire (UTS 46 §4.2).
+///
+/// ```mbt check
+/// test {
+///   let converted = @idna.to_ascii("münchen.example")
+///   assert_eq(converted.name, "xn--mnchen-3ya.example")
+///   assert_eq(converted.is_ok(), true)
+/// }
+/// ```
 pub fn to_ascii(name : StringView, options~ : Options = options) -> Outcome {
   let errors : Array[Fault] = []
   let labels = prepare(name, options, errors)

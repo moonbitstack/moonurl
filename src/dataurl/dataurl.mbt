@@ -97,6 +97,15 @@ pub fn Url::encode(self : Url, base64~ : Bool = true) -> String {
 /// `strict` turns the two things browsers let pass into errors: base64 with
 /// whitespace or the wrong padding, and a `%` that is not an escape. Left off, a
 /// lone `%` stands for itself and whitespace is dropped.
+///
+/// ```mbt check
+/// test {
+///   let greeting = @dataurl.Url::decode("data:text/plain,Hi%20there")
+///   assert_eq(greeting.kind, "text/plain")
+///   assert_eq(greeting.data, b"Hi there")
+///   assert_eq(greeting.encode(base64=true), "data:text/plain;base64,SGkgdGhlcmU=")
+/// }
+/// ```
 pub fn Url::decode(
   text : StringView,
   strict~ : Bool = false,

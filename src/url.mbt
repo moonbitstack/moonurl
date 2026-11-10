@@ -53,12 +53,23 @@ pub let kind : Kind = Bare
 /// between a `/` that separates two segments and a `%2F` inside one.
 #derive(Eq, Debug)
 pub(all) struct Url {
+  /// The scheme with no colon, `https` rather than `https:`.
   scheme : String?
+  /// `user:password` as the authority spelled it, both still escaped.
   userinfo : String?
+  /// A name in ASCII, an IPv4 address in dotted decimal, or an IPv6 address
+  /// without its brackets.
   host : String?
+  /// The port as a number. Nothing means the authority wrote none, which is
+  /// not the same as the scheme having a default.
   port : Int32?
+  /// The path, always a string: a reference with an authority and nothing
+  /// after it has the empty path, not no path.
   path : String
+  /// What follows the `?`, still escaped. Nothing means no query at all,
+  /// which a bare `?` distinguishes from an empty one.
   query : String?
+  /// What follows the `#`, still escaped.
   fragment : String?
 }
 
@@ -130,6 +141,13 @@ pub fn escape(
 
 ///|
 /// Percent-encode text as UTF-8 (RFC 3986 §2.5).
+///
+/// ```mbt check
+/// test {
+///   assert_eq(@moonurl.escape_text("a b/c", kind=@moonurl.Path), "a%20b/c")
+///   assert_eq(@moonurl.escape_text("a b/c", kind=@moonurl.Segment), "a%20b%2Fc")
+/// }
+/// ```
 pub fn escape_text(
   text : StringView,
   kind~ : Kind = kind,
@@ -540,6 +558,20 @@ pub fn Url::is_absolute(self : Url) -> Bool {
 /// Strict: a reference that repeats the base's scheme stays absolute. The
 /// non-strict reading is for pre-1998 parsers and turns `http:g` into something
 /// it does not say.
+///
+/// ```mbt check
+/// test {
+///   let base = @moonurl.Url::decode("http://example.test/a/b/c")
+///   assert_eq(
+///     base.resolve(@moonurl.Url::decode("../d")).encode(),
+///     "http://example.test/a/d",
+///   )
+///   assert_eq(
+///     base.resolve(@moonurl.Url::decode("//other.test/x")).encode(),
+///     "http://other.test/x",
+///   )
+/// }
+/// ```
 pub fn Url::resolve(self : Url, reference : Url) -> Url {
   if reference.scheme is Some(_) {
     return { ..reference, path: remove_dots(reference.path), }

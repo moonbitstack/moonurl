@@ -54,6 +54,13 @@ pub extend Refused with Debug::{to_repr}
 ///
 /// The label is not split and no `xn--` is written: that prefix belongs to
 /// UTS 46, which decides when a label needs encoding at all.
+///
+/// ```mbt check
+/// test {
+///   assert_eq(@idna.encode("münchen"), "mnchen-3ya")
+///   assert_eq(@idna.decode("mnchen-3ya"), "münchen")
+/// }
+/// ```
 pub fn encode(text : StringView) -> String {
   let points : Array[Int32] = []
   for character in text {
