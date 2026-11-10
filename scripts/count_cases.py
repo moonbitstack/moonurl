@@ -63,6 +63,7 @@ def numbers():
     host = read("src/vectors_host_test.mbt")
     idna = read("src/idna/vectors_test.mbt")
     template = read("src/template/vectors_test.mbt")
+    query = read("src/query_sort_test.mbt")
     template_cases = re.search(r"// cases: (\d+)", template)
     if not template_cases:
         raise SystemExit("no case count in src/template/vectors_test.mbt")
@@ -73,6 +74,7 @@ def numbers():
         ("RFC 6570 `uritemplate-test`", int(template_cases.group(1))),
         ("`urltestdata.json`", array_count(url, "url_cases")),
         ("`setters_tests.json`", array_count(url, "setter_cases")),
+        ("`urlsearchparams-sort.any.js`", array_count(query, "sort_cases")),
         ("`toascii.json`", array_count(host, "host_cases")),
         ("`IdnaTestV2.txt`", rows),
     ]

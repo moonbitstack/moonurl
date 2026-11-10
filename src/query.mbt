@@ -60,6 +60,15 @@ pub fn Query::new(pairs? : Array[(String, String)]) -> Query {
 /// a space here and nowhere else in a URL. Escapes are undone to octets and the
 /// octets read as UTF-8, a broken sequence becoming U+FFFD. An empty piece
 /// between two `&` is no pair at all.
+///
+/// ```mbt check
+/// test {
+///   let form = @moonurl.Query::decode(b"q=moon+bit&tag=a&tag=b")
+///   assert_eq(form.get("q"), Some("moon bit"))
+///   assert_eq(form.values("tag"), ["a", "b"])
+///   assert_eq(form.encode(), "q=moon+bit&tag=a&tag=b")
+/// }
+/// ```
 pub fn Query::decode(
   raw : BytesView,
   limits~ : Limits = limits,
@@ -157,6 +166,56 @@ pub fn Query::set(self : Query, name : String, value : String) -> Unit {
 /// Remove every pair under `name`.
 pub fn Query::remove(self : Query, name : StringView) -> Unit {
   self.pairs.retain(p => p.0[:] != name)
+}
+
+///|
+/// Put the pairs in order by name, keeping pairs that share a name in the
+/// order they arrived (WHATWG URL Standard §5.1, `URLSearchParams.sort`).
+///
+/// The order is that of the UTF-16 code units of the names, which is what a
+/// browser sorts by, so `\u{1F308}` comes before `\u{FB03}`: its high
+/// surrogate is the smaller unit even though the code point is the larger.
+/// [`Query::encode`] keeps whatever order it is given, so this is how two
+/// bodies with the same pairs come out byte for byte alike. It does not touch
+/// the pairs' values.
+///
+/// ```mbt check
+/// test {
+///   let body = @moonurl.Query::decode(b"b=2&a=1&b=3")
+///   body.sort()
+///   assert_eq(body.encode(), "a=1&b=2&b=3")
+/// }
+/// ```
+pub fn Query::sort(self : Query) -> Unit {
+  // The order pairs arrived in is part of the answer, so each one carries its
+  // place and the comparison falls back on it: equal names keep their order
+  // whichever way the sort underneath moves its equals.
+  let numbered = Array::makei(self.pairs.length(), i => (i, self.pairs[i]))
+  numbered.sort_by((a, b) => {
+    let by_name = units_order(a.1.0[:], b.1.0[:])
+    if by_name != 0 {
+      by_name
+    } else {
+      a.0 - b.0
+    }
+  })
+  for i, entry in numbered {
+    self.pairs[i] = entry.1
+  }
+}
+
+///|
+/// Compare two strings the way the URL standard orders them: unit by unit of
+/// UTF-16, the shorter one first when one is a prefix of the other.
+fn units_order(a : StringView, b : StringView) -> Int32 {
+  let shorter = if a.length() < b.length() { a.length() } else { b.length() }
+  for i = 0; i < shorter; i = i + 1 {
+    let difference = a[i].to_int() - b[i].to_int()
+    if difference != 0 {
+      return difference
+    }
+  }
+  a.length() - b.length()
 }
 
 ///|

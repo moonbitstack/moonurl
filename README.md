@@ -147,6 +147,17 @@ up to 1 MiB each by default. Change one with `Limits::new(pairs=100)` or
 `{ ..@moonurl.limits, pairs: 100 }`; the two are the same value. A URL's query
 is the same thing, read the same way: `url.params()`.
 
+`Query::encode` writes the pairs in the order it was given. `Query::sort`
+orders them by name, the way a browser's `URLSearchParams.sort` does, and keeps
+the order of pairs that share a name — so two bodies holding the same pairs
+sign the same way:
+
+```moonbit
+let body = @moonurl.Query::decode(b"b=2&a=1&b=3")
+body.sort()
+assert_eq(body.encode(), "a=1&b=2&b=3")
+```
+
 ## Data URLs
 
 A data URL carries the representation inside the reference: the media type, then
@@ -182,6 +193,7 @@ assert_eq(greeting.encode(base64=true), "data:text/plain;base64,SGkgdGhlcmU=")
 | `remove_dots(path)` | `String` | The `.` and `..` segments out |
 | `Query::decode(bytes, limits?)` | `Query raise Refused` | A form body or a query |
 | `Query::encode()` | `String` | The same body written back |
+| `Query::sort()` | `Unit` | The pairs ordered by name, equal names left in place |
 | `idna::to_ascii` / `to_unicode` | `Outcome` | A name in ASCII, or in Unicode |
 | `idna::encode` / `decode` | `String raise Refused` | One label of Punycode |
 | `Template::decode(text)` | `Template raise Refused` | Read a template |
@@ -195,8 +207,8 @@ variable's name where a prefix is one a list or a map cannot take.
 ## Conformance
 
 The result is what the standards' own vectors ask for: every row of RFC 6570's
-own test corpus, every row of the URL Standard's parsing, setter and host-name
-data, and the UTS 46 conformance rows.
+own test corpus, every row of the URL Standard's parsing, setter, host-name and
+form-body sort data, and the UTS 46 conformance rows.
 
 <!-- conformance:start -->
 | Vector | Rows |
@@ -204,6 +216,7 @@ data, and the UTS 46 conformance rows.
 | RFC 6570 `uritemplate-test` | 270 |
 | `urltestdata.json` | 899 |
 | `setters_tests.json` | 278 |
+| `urlsearchparams-sort.any.js` | 8 |
 | `toascii.json` | 87 |
 | `IdnaTestV2.txt` | 6389 |
 <!-- conformance:end -->

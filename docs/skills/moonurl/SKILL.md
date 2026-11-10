@@ -96,6 +96,10 @@ assert_eq(form.encode(), "a=1&b=2&a=3")
 
 let edited = @moonurl.Query::new(pairs=[("q", "two words")])
 assert_eq(edited.encode(), "q=two+words")
+
+let sorted = @moonurl.Query::decode(b"b=2&a=1&b=3")
+sorted.sort()
+assert_eq(sorted.encode(), "a=1&b=2&b=3")
 ```
 
 ## Rules that catch people out
@@ -105,6 +109,10 @@ assert_eq(edited.encode(), "q=two+words")
   there.
 - `Query::decode` takes bytes, not text: `b"a=1"`. Past `limits` — a thousand
   pairs of up to 1 MiB each — it refuses the whole input instead of truncating.
+- `Query::encode` writes pairs in the order they arrived. `Query::sort` orders
+  them by name, as a browser's `URLSearchParams.sort` does, keeping pairs that
+  share a name in their original order — use it before signing or comparing two
+  bodies that hold the same pairs.
 - The serialiser keeps only letters, digits and `*-._`. `~` goes out as `%7E`
   even though RFC 3986 leaves it alone, because the form rules are stricter than
   the reference rules.
