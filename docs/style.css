@@ -945,6 +945,11 @@ button.act:active { transform: translateY(0); }
   .spotlight { grid-template-columns: minmax(0, 1fr); }
   .gh span, .theme-toggle .tlabel { display: none; }
   .topbar { top: 12px; right: 12px; gap: 8px; }
+  /* Two columns of a field list leave a phone three words to a line; the name
+     and its type go above the sentence instead of beside it. */
+  .api-fields { grid-template-columns: minmax(0, 1fr); gap: 2px 0; }
+  .api-fields dt { margin-top: 11px; }
+  .api-fields dt:first-of-type { margin-top: 0; }
 }
 
 /* ---- Motion preferences ---------------------------------------------- */
