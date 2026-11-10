@@ -39,6 +39,13 @@ jobs:
           mkdir -p docs/engine
           cp _build/js/release/build/examples/browser/browser.js docs/engine/moonurl.js
 
+      # The page is generated from the interface files; deploy only the version
+      # that matches the sources this run checked out.
+      - name: the API reference is current
+        run: |
+          python3 scripts/gen_api.py
+          git diff --exit-code docs/index.html
+
       - name: Configure Pages
         uses: actions/configure-pages@v6
         with:

@@ -164,13 +164,17 @@ assert_eq(users.capture("/users/42?page=2"), Some([("id", "42"), ("page", "2")])
 
           <div class="step">
             <span class="num">6</span><h3>Form bodies and data URLs</h3>
-            <p>A URL's query and a form body are the same ordered pairs.</p>
+            <p>A URL's query and a form body are the same ordered pairs. Sorting them by name is what makes two bodies with the same pairs sign the same way.</p>
             <div class="codecard">
               <div class="label">Forms &amp; data URLs</div>
               <pre><code>let q = @moonurl.Query::decode(b"a=1&amp;b=2&amp;a=3")
 assert_eq(q.get("a"), Some("1"))
 assert_eq(q.values("a"), ["1", "3"])
 assert_eq(q.encode(), "a=1&amp;b=2&amp;a=3")
+
+let sorted = @moonurl.Query::decode(b"b=2&amp;a=1&amp;b=3")
+sorted.sort()
+assert_eq(sorted.encode(), "a=1&amp;b=2&amp;b=3")
 
 let greeting = @dataurl.Url::decode("data:text/plain,Hi%20there")
 assert_eq(greeting.charset(), "US-ASCII")</code></pre>
@@ -190,63 +194,261 @@ assert_eq(greeting.charset(), "US-ASCII")</code></pre>
         <div class="wrap">
           <div class="kicker"><span class="eyebrow"><span class="idx">03</span>Reference</span></div>
           <h2 class="sec">API</h2>
-          <p class="sec-sub">Public items, grouped by package. Signatures match the compiled interface.</p>
+          <p class="sec-sub">Public items, grouped by package. Signatures and descriptions are read out of the sources, so the list below is the interface the compiler publishes.</p>
 
-          <div class="pkg">
-            <h3>moonurl <span class="tag">Url · Query · percent coding</span></h3>
-            <div class="note">Parsing, recomposing, resolving, normalising, origins, setters; percent coding by component; form bodies.</div>
-
-            <details class="api-item" open><summary><span class="pm">+</span>Url::decode(text, syntax?, base?) -&gt; Url raise Refused</summary><div class="desc">Read a reference in either grammar. <code>syntax</code> defaults to <code>rfc3986</code>; <code>base</code> resolves a relative reference.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Url::encode() -&gt; String</summary><div class="desc">Write the reference back out.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Url::resolve(reference) -&gt; Url</summary><div class="desc">Resolve against this base (RFC 3986 &sect;5.4).</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Url::normalize() -&gt; Url</summary><div class="desc">Case, escapes and dot segments (&sect;6.2.2).</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Url::origin() -&gt; String</summary><div class="desc"><code>scheme://host:port</code>, or <code>"null"</code>.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Url::authority() -&gt; String?</summary><div class="desc">The authority, brackets restored.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Url::is_absolute() -&gt; Bool</summary><div class="desc">A scheme and no fragment.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Url::params() -&gt; Query raise Refused</summary><div class="desc">The query as ordered pairs.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Url::set_scheme / set_username / set_password / set_host / set_hostname / set_port / set_path / set_query / set_fragment</summary><div class="desc">Nine setters: one component changed, the rest kept.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Url::new(..) -&gt; Url</summary><div class="desc">A reference built piece by piece.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>domain(text, strict?) -&gt; String raise Refused</summary><div class="desc">A host name in ASCII (UTS&nbsp;46).</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>escape / escape_text / unescape / unescape_text</summary><div class="desc">Percent-encode octets or text, and undo it.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>escaped(text, kind?) / normalize_escapes(text) / remove_dots(path)</summary><div class="desc">Check completeness; upper-case hex; drop <code>.</code> and <code>..</code> segments.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Query::decode(bytes, limits?) / encode() / get / values / has / add / set / remove / entries / new</summary><div class="desc">Ordered pairs; <code>+</code> is a space; serialiser keeps only letters, digits and <code>*-._</code>.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Syntax :: Rfc3986 / Whatwg &middot; rfc3986</summary><div class="desc">The grammar a string is read in, and the one <code>decode</code> uses when nothing says.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Kind :: Bare / Host / Userinfo / Segment / Path / Query / Fragment / Whole &middot; kind</summary><div class="desc">The component the percent coder is writing, which decides the octets that may stand for themselves. <code>Bare</code> is the strictest.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Limits { pairs, size } &middot; limits &middot; Limits::new(pairs?, size?)</summary><div class="desc">A thousand pairs of up to 1 MiB each: what <code>Query::decode</code> refuses past.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Refused :: Port / Host / Name / Address / Scheme / Pairs / Pair</summary><div class="desc">Why a string was not a reference. Offsets are <code>at</code>; a bound is <code>limit</code> and the value that broke it <code>got</code>.</div></details>
-          </div>
-
-          <div class="pkg">
-            <h3>moonurl/idna <span class="tag">punycode · UTS 46</span></h3>
-            <div class="note">A name mapped to ASCII and back: the mapping table, NFC, hyphen and joiner rules, the bidi rule, and DNS lengths.</div>
-            <details class="api-item" open><summary><span class="pm">+</span>to_ascii(text, options?) -&gt; Outcome</summary><div class="desc">A name in ASCII, plus any faults the standard recorded.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>to_unicode(text, options?) -&gt; Outcome</summary><div class="desc">A name back in Unicode, plus any faults.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>encode(label) -&gt; String / decode(label) -&gt; String raise Refused</summary><div class="desc">One label of RFC&nbsp;3492 punycode.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>options : Options / strict : Options</summary><div class="desc">The lenient default and the strict (DNS-length) preset.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Outcome { name, errors } / Fault / Options</summary><div class="desc"><code>is_ok()</code> tells you; <code>errors</code> lists what the standard objected to.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Refused :: Digit / Overflow</summary><div class="desc">A label that is not punycode: a bad digit, or a number too large for the encoding.</div></details>
-          </div>
-
-          <div class="pkg">
-            <h3>moonurl/template <span class="tag">RFC 6570</span></h3>
-            <div class="note">Holes named and filled: simple and reserved expansions, label, path and parameter operators, prefixes and exploded lists and pairs.</div>
-            <details class="api-item" open><summary><span class="pm">+</span>Template::decode(text) -&gt; Template raise Refused</summary><div class="desc">Read a template.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Template::expand(values) -&gt; String raise Refused</summary><div class="desc">Fill it in. Any <code>Variables</code> works; a <code>Map[String, Value]</code> already does. A <code>:N</code> prefix on a list or map is refused.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Template::capture(uri) -&gt; Array[(String, String)]?</summary><div class="desc">Read a URI back into the names that made it.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Value :: Text / List / Pairs</summary><div class="desc">A scalar, a list, or a list of pairs fed to the holes.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Template::encode() -&gt; String / Variables</summary><div class="desc">The template as it was written. <code>Variables</code> is the one method <code>expand</code> needs, so a request or a configuration record can fill holes without copying into a map.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Refused :: Bracket / Syntax / Operator / Length / Composite</summary><div class="desc">A template that cannot be read, or a prefix on a list or a map, which RFC&nbsp;6570 has no expansion for.</div></details>
-          </div>
-
-          <div class="pkg">
-            <h3>moonurl/dataurl <span class="tag">RFC 2397</span></h3>
-            <div class="note">A whole representation written inside the reference to it.</div>
-            <details class="api-item" open><summary><span class="pm">+</span>Url::decode(text, strict?) -&gt; Url raise Refused</summary><div class="desc">Read a data URL.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Url::encode(base64?) -&gt; String / new(Bytes, kind?)</summary><div class="desc">Write it back; choose base64 or the URL-safe form.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Url::charset() -&gt; String</summary><div class="desc">The media type's charset, defaulting to US-ASCII.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>kind : String</summary><div class="desc">What a data URL means when it names no media type: <code>text/plain;charset=US-ASCII</code>.</div></details>
-            <details class="api-item"><summary><span class="pm">+</span>Refused :: Scheme / Comma / Escape / Base64</summary><div class="desc">Why the text was not a data URL: another scheme, no comma, an unfinished escape, or a broken base64 tail.</div></details>
-          </div>
+          <!-- api:begin -->
+<p class="api-stat">119 public items in 4 packages: everything the interface files publish. The <code>equal</code>, <code>not_equal</code> and <code>to_repr</code> that <code>Eq</code> and <code>Debug</code> bring are named at the foot of the type that carries them.</p>
+<!-- written by scripts/gen_api.py; edit that, not this -->
+<div class="pkg">
+<h3>moonurl <span class="tag">Url · Query · percent coding</span></h3>
+<p class="note">Parsing, recomposing, resolving, normalising, origins, setters; percent coding by component; form bodies.</p>
+<h4 class="api-group">Types</h4>
+<details class="api-item" id="api-moonurl-Kind" open><summary><span class="pm">+</span><span class="decl">enum Kind</span><span class="badge">enum</span></summary><div class="desc"><div class="api-doc"><p>Which component an octet is going into, and so which octets may stand for themselves (RFC 3986 §2.2, §3).</p>
+<p><code>&amp;</code> is ordinary inside a path and a separator inside a query. The grammar answers that, not the caller.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>Bare</code></dt><dd><p>Unreserved only — everything else is escaped. This is what one piece of a query goes out as, since <code>&amp;</code> and <code>=</code> inside a value must not read as the separators they look like.</p></dd><dt><code>Host</code></dt><dd><p><code>reg-name</code> (§3.2.2): unreserved and sub-delims.</p></dd><dt><code>Userinfo</code></dt><dd><p><code>userinfo</code> (§3.2.1): <code>reg-name</code> and <code>:</code>.</p></dd><dt><code>Segment</code></dt><dd><p>One <code>segment</code> (§3.3): <code>pchar</code>, so <code>/</code> is escaped and stays one segment.</p></dd><dt><code>Path</code></dt><dd><p>A whole <code>path</code> (§3.3): <code>pchar</code> and <code>/</code>.</p></dd><dt><code>Query</code></dt><dd><p><code>query</code> (§3.4): <code>pchar</code>, <code>/</code> and <code>?</code>.</p></dd><dt><code>Fragment</code></dt><dd><p><code>fragment</code> (§3.5): the same set as <code>query</code>.</p></dd><dt><code>Whole</code></dt><dd><p>A whole URI reference: everything the grammar allows anywhere, <code>%</code> included. What a <code>Location</code> header carries — the value is already a URI, and only the octets no URI may contain need escaping.</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-moonurl-Kind-equal">equal</code>, <code id="api-moonurl-Kind-not-equal">not_equal</code>, <code id="api-moonurl-Kind-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-moonurl-Limits"><summary><span class="pm">+</span><span class="decl">struct Limits</span><span class="badge">struct</span></summary><div class="desc"><div class="api-doc"><p>What a decode accepts. Past either bound the whole input is refused rather than cut short, so a handler never acts on part of a form.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>pairs</code><span class="ty">Int32</span></dt><dd><p>Most pairs.</p></dd><dt><code>size</code><span class="ty">Int32</span></dt><dd><p>Most bytes in one pair as it arrives, still encoded.</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-moonurl-Limits-equal">equal</code>, <code id="api-moonurl-Limits-not-equal">not_equal</code>, <code id="api-moonurl-Limits-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-moonurl-Limits-new"><summary><span class="pm">+</span><span class="decl">fn Limits::new(pairs~ : Int32 = limits.pairs, size~ : Int32 = limits.size) -&gt; Limits</span></summary><div class="desc"><div class="api-doc"><p>Limits by name, each defaulting to the preset&#x27;s.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Query"><summary><span class="pm">+</span><span class="decl">struct Query</span><span class="badge">struct</span></summary><div class="desc"><div class="api-doc"><p>The name–value pairs of an <code>application/x-www-form-urlencoded</code> string: a URL&#x27;s query, or a form body (WHATWG URL Standard §5). Order and repeated names are kept, as <code>URLSearchParams</code> and Go&#x27;s <code>url.Values</code> keep them.</p></div></div></details>
+<p class="derived">Derived: <code id="api-moonurl-Query-equal">equal</code>, <code id="api-moonurl-Query-not-equal">not_equal</code>, <code id="api-moonurl-Query-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-moonurl-Query-add"><summary><span class="pm">+</span><span class="decl">fn Query::add(self : Query, name : String, value : String) -&gt; Unit</span></summary><div class="desc"><div class="api-doc"><p>Add a pair at the end, keeping any already under <code>name</code>.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Query-decode"><summary><span class="pm">+</span><span class="decl">fn Query::decode(raw : BytesView, limits~ : Limits = limits) -&gt; Query raise Refused</span></summary><div class="desc"><div class="api-doc"><p>Read an <code>application/x-www-form-urlencoded</code> string (WHATWG URL Standard §5.1).</p>
+<p><code>&amp;</code> separates pairs and the first <code>=</code> separates a name from its value; <code>+</code> is a space here and nowhere else in a URL. Escapes are undone to octets and the octets read as UTF-8, a broken sequence becoming U+FFFD. An empty piece between two <code>&amp;</code> is no pair at all.</p>
+<pre class="eg"><code>test {
+  let form = @moonurl.Query::decode(b&quot;q=moon+bit&amp;tag=a&amp;tag=b&quot;)
+  assert_eq(form.get(&quot;q&quot;), Some(&quot;moon bit&quot;))
+  assert_eq(form.values(&quot;tag&quot;), [&quot;a&quot;, &quot;b&quot;])
+  assert_eq(form.encode(), &quot;q=moon+bit&amp;tag=a&amp;tag=b&quot;)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-moonurl-Query-encode"><summary><span class="pm">+</span><span class="decl">fn Query::encode(self : Query) -&gt; String</span></summary><div class="desc"><div class="api-doc"><p>Write the pairs as <code>application/x-www-form-urlencoded</code> (WHATWG URL Standard §5.2): letters, digits and <code>*-._</code> stand for themselves, a space is <code>+</code>, and every other octet of the UTF-8 is <code>%XX</code>.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Query-entries"><summary><span class="pm">+</span><span class="decl">fn Query::entries(self : Query) -&gt; Array[(String, String)]</span></summary><div class="desc"><div class="api-doc"><p>Every pair, in order.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Query-get"><summary><span class="pm">+</span><span class="decl">fn Query::get(self : Query, name : StringView) -&gt; String?</span></summary><div class="desc"><div class="api-doc"><p>The first value under <code>name</code>.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Query-has"><summary><span class="pm">+</span><span class="decl">fn Query::has(self : Query, name : StringView) -&gt; Bool</span></summary><div class="desc"><div class="api-doc"><p>Whether any pair is named <code>name</code>.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Query-new"><summary><span class="pm">+</span><span class="decl">fn Query::new(pairs? : Array[(String, String)]) -&gt; Query</span></summary><div class="desc"><div class="api-doc"><p>A query holding <code>pairs</code>, in order.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Query-remove"><summary><span class="pm">+</span><span class="decl">fn Query::remove(self : Query, name : StringView) -&gt; Unit</span></summary><div class="desc"><div class="api-doc"><p>Remove every pair under <code>name</code>.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Query-set"><summary><span class="pm">+</span><span class="decl">fn Query::set(self : Query, name : String, value : String) -&gt; Unit</span></summary><div class="desc"><div class="api-doc"><p>Leave exactly one pair under <code>name</code>, holding <code>value</code>: the first one&#x27;s place if there was one, the end if not.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Query-sort"><summary><span class="pm">+</span><span class="decl">fn Query::sort(self : Query) -&gt; Unit</span></summary><div class="desc"><div class="api-doc"><p>Put the pairs in order by name, keeping pairs that share a name in the order they arrived (WHATWG URL Standard §5.1, <code>URLSearchParams.sort</code>).</p>
+<p>The order is that of the UTF-16 code units of the names, which is what a browser sorts by, so <code>\u{1F308}</code> comes before <code>\u{FB03}</code>: its high surrogate is the smaller unit even though the code point is the larger. <code>Query::encode</code> keeps whatever order it is given, so this is how two bodies with the same pairs come out byte for byte alike. It does not touch the pairs&#x27; values.</p>
+<pre class="eg"><code>test {
+  let body = @moonurl.Query::decode(b&quot;b=2&amp;a=1&amp;b=3&quot;)
+  body.sort()
+  assert_eq(body.encode(), &quot;a=1&amp;b=2&amp;b=3&quot;)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-moonurl-Query-values"><summary><span class="pm">+</span><span class="decl">fn Query::values(self : Query, name : StringView) -&gt; Array[String]</span></summary><div class="desc"><div class="api-doc"><p>Every value under <code>name</code>, in order.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Refused"><summary><span class="pm">+</span><span class="decl">suberror Refused</span><span class="badge">error</span></summary><div class="desc"><div class="api-doc"><p>Why a string is not a URI reference. Only the authority can fail: §B splits any string at all into the five top-level components, and does not split that one.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>Port</code><span class="ty">at~ : Int32</span></dt><dd><p>A port that is not digits, at this offset.</p></dd><dt><code>Host</code><span class="ty">at~ : Int32</span></dt><dd><p>An IP-literal with no closing bracket, at the opening one&#x27;s offset.</p></dd><dt><code>Name</code><span class="ty">at~ : Int32</span></dt><dd><p>A host that is not a host: an empty one where one is needed, a code point the grammar forbids in one, or a name the IDNA rules refuse.</p></dd><dt><code>Address</code><span class="ty">at~ : Int32</span></dt><dd><p>A number that reads as an IP address and is not one.</p></dd><dt><code>Scheme</code><span class="ty">at~ : Int32</span></dt><dd><p>Input with no scheme, and no base to take one from.</p></dd><dt><code>Pairs</code><span class="ty">limit~ : Int32</span></dt><dd><p>A form-encoded string with more pairs than the limit.</p></dd><dt><code>Pair</code><span class="ty">limit~ : Int32, got~ : Int32</span></dt><dd><p>One form-encoded pair longer than the limit, in octets.</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-moonurl-Refused-equal">equal</code>, <code id="api-moonurl-Refused-not-equal">not_equal</code>, <code id="api-moonurl-Refused-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-moonurl-Syntax"><summary><span class="pm">+</span><span class="decl">enum Syntax</span><span class="badge">enum</span></summary><div class="desc"><div class="api-doc"><p>Which grammar decides what a string means. The two disagree about almost everything a browser has to get right, and both are in the standard library of every language that talks to the web.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>Rfc3986</code></dt><dd><p>RFC 3986: the generic grammar, where <code>http://h:80/</code> keeps its port and <code>http:g</code> is a URI with scheme <code>http</code>.</p></dd><dt><code>Whatwg</code></dt><dd><p>The WHATWG URL Standard: special schemes with their default ports, backslashes as soliduses, IPv4 in any of its spellings, and a host name run through IDNA.</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-moonurl-Syntax-equal">equal</code>, <code id="api-moonurl-Syntax-not-equal">not_equal</code>, <code id="api-moonurl-Syntax-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-moonurl-Url"><summary><span class="pm">+</span><span class="decl">struct Url</span><span class="badge">struct</span></summary><div class="desc"><div class="api-doc"><p>A URI reference taken apart (RFC 3986 §3).</p>
+<p>No <code>scheme</code> makes it relative (§4.2). No <code>host</code> means no authority, which is not an empty host — <code>file:///tmp</code> has one, <code>mailto:x@y</code> has none.</p>
+<p>Fields stay percent-encoded. Decoding on the way in would lose the difference between a <code>/</code> that separates two segments and a <code>%2F</code> inside one.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>scheme</code><span class="ty">String?</span></dt><dd><p>The scheme with no colon, <code>https</code> rather than <code>https:</code>.</p></dd><dt><code>userinfo</code><span class="ty">String?</span></dt><dd><p><code>user:password</code> as the authority spelled it, both still escaped.</p></dd><dt><code>host</code><span class="ty">String?</span></dt><dd><p>A name in ASCII, an IPv4 address in dotted decimal, or an IPv6 address without its brackets.</p></dd><dt><code>port</code><span class="ty">Int32?</span></dt><dd><p>The port as a number. Nothing means the authority wrote none, which is not the same as the scheme having a default.</p></dd><dt><code>path</code><span class="ty">String</span></dt><dd><p>The path, always a string: a reference with an authority and nothing after it has the empty path, not no path.</p></dd><dt><code>query</code><span class="ty">String?</span></dt><dd><p>What follows the <code>?</code>, still escaped. Nothing means no query at all, which a bare <code>?</code> distinguishes from an empty one.</p></dd><dt><code>fragment</code><span class="ty">String?</span></dt><dd><p>What follows the <code>#</code>, still escaped.</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-moonurl-Url-equal">equal</code>, <code id="api-moonurl-Url-not-equal">not_equal</code>, <code id="api-moonurl-Url-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-moonurl-Url-authority"><summary><span class="pm">+</span><span class="decl">fn Url::authority(self : Url) -&gt; String?</span></summary><div class="desc"><div class="api-doc"><p>The authority as one string, brackets restored around an IP-literal (§3.2).</p></div></div></details>
+<details class="api-item" id="api-moonurl-Url-decode"><summary><span class="pm">+</span><span class="decl">fn Url::decode(text : StringView, syntax~ : Syntax = rfc3986, base? : Url) -&gt; Url raise Refused</span></summary><div class="desc"><div class="api-doc"><p>Take a reference apart.</p>
+<p>Under <code>Rfc3986</code> any string splits (§3), and only the authority can be malformed. Under <code>Whatwg</code> the string is what a browser would make of it: a reference that does not parse is refused rather than guessed at.</p>
+<p><code>base</code> resolves a relative reference against one, in whichever grammar is asked for. The WHATWG algorithm takes the base as text and parses it again, so a base that is itself not a URL is refused here too.</p>
+<pre class="eg"><code>test {
+  // RFC 3986 keeps the reference as it was written.
+  let url = @moonurl.Url::decode(&quot;HTTP://EXAMPLE.test:80/a/../b?q#f&quot;)
+  assert_eq(url.encode(), &quot;HTTP://EXAMPLE.test:80/a/../b?q#f&quot;)
+  let whatwg = @moonurl.Url::decode(
+    &quot;HTTP://EXAMPLE.test:80/a/../b&quot;,
+    syntax=@moonurl.Whatwg,
+  )
+  assert_eq(whatwg.encode(), &quot;http://example.test/b&quot;)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-moonurl-Url-encode"><summary><span class="pm">+</span><span class="decl">fn Url::encode(self : Url) -&gt; String</span></summary><div class="desc"><div class="api-doc"><p>Put the reference back together (RFC 3986 §5.3).</p></div></div></details>
+<details class="api-item" id="api-moonurl-Url-is-absolute"><summary><span class="pm">+</span><span class="decl">fn Url::is_absolute(self : Url) -&gt; Bool</span></summary><div class="desc"><div class="api-doc"><p>A reference with a scheme and no fragment is a URI (§3); anything else is a relative reference or a same-document one.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Url-new"><summary><span class="pm">+</span><span class="decl">fn Url::new(scheme? : String, userinfo? : String, host? : String, port? : Int32, path~ : String = &quot;&quot;, query? : String, fragment? : String) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>A reference this shape, for building one rather than reading one.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Url-normalize"><summary><span class="pm">+</span><span class="decl">fn Url::normalize(self : Url) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>Syntax-based normalisation (RFC 3986 §6.2.2): scheme and host to lower case, escapes normalised, dot segments out.</p>
+<p>Not §6.2.3: dropping <code>:80</code> is true of <code>http</code> and false in general, and this package holds no register of schemes.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Url-origin"><summary><span class="pm">+</span><span class="decl">fn Url::origin(self : Url) -&gt; String</span></summary><div class="desc"><div class="api-doc"><p>The origin of a URL (§4.7): what two URLs have to share to be the same site, written <code>scheme://host:port</code>.</p>
+<p>A <code>blob:</code> URL carries the origin of the URL inside it. Everything else that is not a scheme with an authority of its own — <code>file:</code>, <code>data:</code>, <code>mailto:</code> — has an origin no other URL shares, which is written <code>&quot;null&quot;</code>.</p>
+<pre class="eg"><code>test {
+  let url = @moonurl.Url::decode(
+    &quot;https://example.test/a&quot;,
+    syntax=@moonurl.Whatwg,
+  )
+  assert_eq(url.origin(), &quot;https://example.test&quot;)
+  let file = @moonurl.Url::decode(&quot;file:///tmp/x&quot;, syntax=@moonurl.Whatwg)
+  assert_eq(file.origin(), &quot;null&quot;)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-moonurl-Url-params"><summary><span class="pm">+</span><span class="decl">fn Url::params(self : Url) -&gt; Query raise Refused</span></summary><div class="desc"><div class="api-doc"><p>The query as pairs, read the way <code>URLSearchParams</code> reads it (WHATWG URL Standard §5.1).</p>
+<pre class="eg"><code>test {
+  let url = @moonurl.Url::decode(
+    &quot;https://h/?a=1&amp;a=2&amp;b=x+y&quot;,
+    syntax=@moonurl.Whatwg,
+  )
+  assert_eq(url.params().values(&quot;a&quot;).length(), 2)
+  assert_eq(url.params().get(&quot;b&quot;).unwrap(), &quot;x y&quot;)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-moonurl-Url-resolve"><summary><span class="pm">+</span><span class="decl">fn Url::resolve(self : Url, reference : Url) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>Resolve <code>reference</code> against this base (RFC 3986 §5.2.2, strict).</p>
+<p>Strict: a reference that repeats the base&#x27;s scheme stays absolute. The non-strict reading is for pre-1998 parsers and turns <code>http:g</code> into something it does not say.</p>
+<pre class="eg"><code>test {
+  let base = @moonurl.Url::decode(&quot;http://example.test/a/b/c&quot;)
+  assert_eq(
+    base.resolve(@moonurl.Url::decode(&quot;../d&quot;)).encode(),
+    &quot;http://example.test/a/d&quot;,
+  )
+  assert_eq(
+    base.resolve(@moonurl.Url::decode(&quot;//other.test/x&quot;)).encode(),
+    &quot;http://other.test/x&quot;,
+  )
+}</code></pre></div></div></details>
+<details class="api-item" id="api-moonurl-Url-set-fragment"><summary><span class="pm">+</span><span class="decl">fn Url::set_fragment(self : Url, value : StringView) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>This URL with its fragment replaced, the leading <code>#</code> of the value optional. An empty value takes the fragment away.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Url-set-host"><summary><span class="pm">+</span><span class="decl">fn Url::set_host(self : Url, value : StringView) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>This URL with its host replaced, and its port too if the value carries one.</p>
+<p>An empty value is a host with nothing in it, not a missing host: the URL keeps its shape and loses its authority&#x27;s middle.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Url-set-hostname"><summary><span class="pm">+</span><span class="decl">fn Url::set_hostname(self : Url, value : StringView) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>This URL with its host replaced and its port left alone.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Url-set-password"><summary><span class="pm">+</span><span class="decl">fn Url::set_password(self : Url, value : StringView) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>This URL with its password replaced.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Url-set-path"><summary><span class="pm">+</span><span class="decl">fn Url::set_path(self : Url, value : StringView) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>This URL with its path replaced. A URL whose path is opaque — <code>mailto:</code>, <code>data:</code> — has no path to replace, and keeps the one it has.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Url-set-port"><summary><span class="pm">+</span><span class="decl">fn Url::set_port(self : Url, value : StringView) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>This URL with its port replaced. An empty value takes the port away, which is not the same as setting it to zero.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Url-set-query"><summary><span class="pm">+</span><span class="decl">fn Url::set_query(self : Url, value : StringView) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>This URL with its query replaced, the leading <code>?</code> of the value optional. An empty value takes the query away.</p></div></div></details>
+<details class="api-item" id="api-moonurl-Url-set-scheme"><summary><span class="pm">+</span><span class="decl">fn Url::set_scheme(self : Url, value : StringView) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>This URL with its scheme replaced, or this URL if the value is not a scheme.</p>
+<p>A URL may change between special and non-special schemes only through another special one, and only a URL with no credentials, port or <code>file</code> host can become <code>file</code>; the setter leaves anything else as it was, as the standard&#x27;s own setter does.</p>
+<pre class="eg"><code>test {
+  let url = @moonurl.Url::decode(
+    &quot;http://example.test/a&quot;,
+    syntax=@moonurl.Whatwg,
+  )
+  assert_eq(url.set_scheme(&quot;https&quot;).encode(), &quot;https://example.test/a&quot;)
+  assert_eq(url.set_scheme(&quot;1bad&quot;).encode(), &quot;http://example.test/a&quot;)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-moonurl-Url-set-username"><summary><span class="pm">+</span><span class="decl">fn Url::set_username(self : Url, value : StringView) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>This URL with its username replaced.</p></div></div></details>
+<h4 class="api-group">Functions</h4>
+<details class="api-item" id="api-moonurl-domain"><summary><span class="pm">+</span><span class="decl">fn domain(text : StringView, strict~ : Bool = false) -&gt; String raise Refused</span></summary><div class="desc"><div class="api-doc"><p>The domain parser of §3.3: the host name a browser would make of <code>text</code>.</p>
+<p>Strict is for a name that has to be one: <code>CheckHyphens</code>, the STD 3 rules and the DNS lengths are all on, and invalid Punycode is refused.</p>
+<p>Lenient is the browser: an ASCII string is taken as it stands, lowercased, whatever IDNA would say about the label — a name that reads as Punycode but is not still addresses something. Everything else goes through UTS 46.</p>
+<pre class="eg"><code>test {
+  assert_eq(@moonurl.domain(&quot;MÜNCHEN.example&quot;), &quot;xn--mnchen-3ya.example&quot;)
+  assert_eq(@moonurl.domain(&quot;xn--a&quot;), &quot;xn--a&quot;)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-moonurl-escape"><summary><span class="pm">+</span><span class="decl">fn escape(raw : BytesView, kind~ : Kind = kind, spare~ : StringView = &quot;&quot;[:]) -&gt; String</span></summary><div class="desc"><div class="api-doc"><p>Percent-encode octets for <code>kind</code> (RFC 3986 §2.1).</p>
+<p>Octets, not text: what travels inside a URI is whatever the caller encoded it as. <code>escape_text</code> is the one that assumes UTF-8.</p>
+<p><code>spare</code> is for percent coding that is not going into a URI at all — gRPC&#x27;s <code>grpc-message</code> keeps all of printable ASCII but <code>%</code>, which is no component of RFC 3986&#x27;s. A URI component names its <code>kind</code> and leaves <code>spare</code> alone.</p></div></div></details>
+<details class="api-item" id="api-moonurl-escape-text"><summary><span class="pm">+</span><span class="decl">fn escape_text(text : StringView, kind~ : Kind = kind, spare~ : StringView = &quot;&quot;[:]) -&gt; String</span></summary><div class="desc"><div class="api-doc"><p>Percent-encode text as UTF-8 (RFC 3986 §2.5).</p>
+<pre class="eg"><code>test {
+  assert_eq(@moonurl.escape_text(&quot;a b/c&quot;, kind=@moonurl.Path), &quot;a%20b/c&quot;)
+  assert_eq(@moonurl.escape_text(&quot;a b/c&quot;, kind=@moonurl.Segment), &quot;a%20b%2Fc&quot;)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-moonurl-escaped"><summary><span class="pm">+</span><span class="decl">fn escaped(text : StringView, kind~ : Kind = kind, spare~ : StringView = &quot;&quot;[:]) -&gt; Bool</span></summary><div class="desc"><div class="api-doc"><p>Whether every <code>%</code> is a complete escape and nothing outside <code>kind</code>&#x27;s set is there unescaped — the check <code>unescape</code> does not make.</p></div></div></details>
+<details class="api-item" id="api-moonurl-normalize-escapes"><summary><span class="pm">+</span><span class="decl">fn normalize_escapes(text : StringView) -&gt; String</span></summary><div class="desc"><div class="api-doc"><p>Percent-encoding normalised (RFC 3986 §6.2.2.2): hex digits in upper case, and escapes of unreserved octets written out plainly.</p></div></div></details>
+<details class="api-item" id="api-moonurl-remove-dots"><summary><span class="pm">+</span><span class="decl">fn remove_dots(path : String) -&gt; String</span></summary><div class="desc"><div class="api-doc"><p>Take out the <code>.</code> and <code>..</code> segments (RFC 3986 §5.2.4).</p>
+<p>The section&#x27;s loop rather than a split-and-rejoin: the two differ at exactly the inputs that matter — a trailing <code>..</code>, a path that climbs above its own root, <code>/..//</code>.</p></div></div></details>
+<details class="api-item" id="api-moonurl-unescape"><summary><span class="pm">+</span><span class="decl">fn unescape(raw : BytesView) -&gt; Bytes</span></summary><div class="desc"><div class="api-doc"><p>Undo percent-encoding (RFC 3986 §2.1).</p>
+<p>A <code>%</code> without two hex digits after it stands for itself. This runs on request targets and form bodies, where refusing the whole message over one stray <code>%</code> helps nobody; <code>escaped</code> is for the caller who would rather be told.</p></div></div></details>
+<details class="api-item" id="api-moonurl-unescape-text"><summary><span class="pm">+</span><span class="decl">fn unescape_text(text : StringView) -&gt; String</span></summary><div class="desc"><div class="api-doc"><p>Undo percent-encoding and read the result as UTF-8, replacing what is not.</p></div></div></details>
+<h4 class="api-group">Values</h4>
+<details class="api-item" id="api-moonurl-kind"><summary><span class="pm">+</span><span class="decl">let kind : Kind</span></summary><div class="desc"><div class="api-doc"><p>The strictest component, for when nothing says. Escaping an octet that did not need it changes nothing; leaving one that did changes where the component ends.</p></div></div></details>
+<details class="api-item" id="api-moonurl-limits"><summary><span class="pm">+</span><span class="decl">let limits : Limits</span></summary><div class="desc"><div class="api-doc"><p>A thousand pairs of up to 1 MiB each: Starlette&#x27;s <code>max_fields</code> and <code>max_part_size</code>, and the <code>parameterLimit</code> of Node&#x27;s <code>qs</code>.</p></div></div></details>
+<details class="api-item" id="api-moonurl-rfc3986"><summary><span class="pm">+</span><span class="decl">let rfc3986 : Syntax</span></summary><div class="desc"><div class="api-doc"><p>The grammar <code>Url::decode</code> uses when nothing says.</p></div></div></details>
+</div>
+<div class="pkg">
+<h3>moonurl/idna <span class="tag">punycode · UTS 46</span></h3>
+<p class="note">A name mapped to ASCII and back: the mapping table, NFC, hyphen and joiner rules, the bidi rule, and DNS lengths.</p>
+<h4 class="api-group">Types</h4>
+<details class="api-item" id="api-idna-Fault" open><summary><span class="pm">+</span><span class="decl">enum Fault</span><span class="badge">enum</span></summary><div class="desc"><div class="api-doc"><p>Why a name is not the name the standard would accept.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>Shape</code><span class="ty">at~ : Int32</span></dt><dd><p>A label that is not in NFC, begins with a combining mark, or begins with <code>xn--</code> where that prefix is not allowed (V1, V4, V6).</p></dd><dt><code>Hyphen</code><span class="ty">at~ : Int32</span></dt><dd><p>A hyphen where <code>check_hyphens</code> forbids one (V2, V3).</p></dd><dt><code>Dot</code><span class="ty">at~ : Int32</span></dt><dd><p>A full stop inside a label (V5).</p></dd><dt><code>Disallowed</code><span class="ty">at~ : Int32, got~ : Char</span></dt><dd><p>A code point the mapping table does not allow here (V7).</p></dd><dt><code>Std3</code><span class="ty">at~ : Int32, got~ : Char</span></dt><dd><p>ASCII outside <code>a</code> to <code>z</code>, <code>0</code> to <code>9</code> and <code>-</code>, while <code>std3</code> is on (U1).</p></dd><dt><code>Punycode</code><span class="ty">at~ : Int32</span></dt><dd><p>An <code>xn--</code> label that does not decode, decodes to nothing, or decodes to ASCII alone (P4).</p></dd><dt><code>Joiner</code><span class="ty">at~ : Int32</span></dt><dd><p>A joiner out of context (C1, C2).</p></dd><dt><code>Bidi</code><span class="ty">at~ : Int32</span></dt><dd><p>A label the bidi rule refuses (B1 to B6).</p></dd><dt><code>Empty</code><span class="ty">at~ : Int32</span></dt><dd><p>An empty label (A4_2, X4_2).</p></dd><dt><code>Length</code><span class="ty">limit~ : Int32, got~ : Int32</span></dt><dd><p>A name or label past its length limit (A4_1, A4_2).</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-idna-Fault-equal">equal</code>, <code id="api-idna-Fault-not-equal">not_equal</code>, <code id="api-idna-Fault-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-idna-Options"><summary><span class="pm">+</span><span class="decl">struct Options</span><span class="badge">struct</span></summary><div class="desc"><div class="api-doc"><p>What UTS 46 leaves to the caller. Its two presets cover the two callers there are: a browser reading a host name out of a link, and a zone file.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>transitional</code><span class="ty">Bool</span></dt><dd><p>Treat ß, ς and the two joiners the way IDNA2003 did. Deprecated by the standard, and kept because some names still exist in that spelling.</p></dd><dt><code>check_hyphens</code><span class="ty">Bool</span></dt><dd><p>Refuse a label with a hyphen where one may not be: leading, trailing, or in the third and fourth positions of a label that is not an A-label.</p></dd><dt><code>check_bidi</code><span class="ty">Bool</span></dt><dd><p>Refuse a name whose right-to-left labels break the bidi rule of RFC 5893.</p></dd><dt><code>check_joiners</code><span class="ty">Bool</span></dt><dd><p>Refuse a zero width joiner or non-joiner outside the context that allows one (RFC 5892 Appendix A).</p></dd><dt><code>std3</code><span class="ty">Bool</span></dt><dd><p>Refuse ASCII outside <code>a</code> to <code>z</code>, <code>0</code> to <code>9</code> and <code>-</code>, the STD 3 rules.</p></dd><dt><code>dns_length</code><span class="ty">Bool</span></dt><dd><p>Refuse a name past the DNS limits: 253 octets, 63 to a label.</p></dd><dt><code>ignore_invalid_punycode</code><span class="ty">Bool</span></dt><dd><p>Pass an <code>xn--</code> label that is not Punycode through untouched instead of refusing it. The URL standard asks for this: a browser keeps a label it cannot read rather than dropping the host.</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-idna-Options-equal">equal</code>, <code id="api-idna-Options-not-equal">not_equal</code>, <code id="api-idna-Options-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-idna-Outcome"><summary><span class="pm">+</span><span class="decl">struct Outcome</span><span class="badge">struct</span></summary><div class="desc"><div class="api-doc"><p>A name as far as the standard could convert it, and what it objected to on the way. Conversion does not stop at the first error, so a caller that wants to show the user what is wrong has the rest of the name too.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>name</code><span class="ty">String</span></dt><dd><p>The converted name.</p></dd><dt><code>errors</code><span class="ty">Array[Fault]</span></dt><dd><p>Everything wrong with it, in no particular order.</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-idna-Outcome-equal">equal</code>, <code id="api-idna-Outcome-not-equal">not_equal</code>, <code id="api-idna-Outcome-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-idna-Outcome-is-ok"><summary><span class="pm">+</span><span class="decl">fn Outcome::is_ok(self : Outcome) -&gt; Bool</span></summary><div class="desc"><div class="api-doc"><p>Whether the name is one the standard accepts.</p></div></div></details>
+<details class="api-item" id="api-idna-Refused"><summary><span class="pm">+</span><span class="decl">suberror Refused</span><span class="badge">error</span></summary><div class="desc"><div class="api-doc"><p>Why a label is not Punycode.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>Digit</code><span class="ty">at~ : Int32</span></dt><dd><p>A character that is not a Punycode digit, at this offset.</p></dd><dt><code>Overflow</code><span class="ty">at~ : Int32</span></dt><dd><p>A number that runs past the code space, at this offset.</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-idna-Refused-equal">equal</code>, <code id="api-idna-Refused-not-equal">not_equal</code>, <code id="api-idna-Refused-to-repr">to_repr</code>.</p>
+<h4 class="api-group">Functions</h4>
+<details class="api-item" id="api-idna-decode"><summary><span class="pm">+</span><span class="decl">fn decode(text : StringView) -&gt; String raise Refused</span></summary><div class="desc"><div class="api-doc"><p>Decode one label (RFC 3492 §6.2).</p>
+<p>Both cases of digit are accepted: a name may have been upper-cased on its way here, and case carries nothing in Punycode.</p></div></div></details>
+<details class="api-item" id="api-idna-encode"><summary><span class="pm">+</span><span class="decl">fn encode(text : StringView) -&gt; String</span></summary><div class="desc"><div class="api-doc"><p>Encode one label (RFC 3492 §6.3).</p>
+<p>The label is not split and no <code>xn--</code> is written: that prefix belongs to UTS 46, which decides when a label needs encoding at all.</p>
+<pre class="eg"><code>test {
+  assert_eq(@idna.encode(&quot;münchen&quot;), &quot;mnchen-3ya&quot;)
+  assert_eq(@idna.decode(&quot;mnchen-3ya&quot;), &quot;münchen&quot;)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-idna-to-ascii"><summary><span class="pm">+</span><span class="decl">fn to_ascii(name : StringView, options~ : Options = options) -&gt; Outcome</span></summary><div class="desc"><div class="api-doc"><p>A name as ASCII, the form that goes on the wire (UTS 46 §4.2).</p>
+<pre class="eg"><code>test {
+  let converted = @idna.to_ascii(&quot;münchen.example&quot;)
+  assert_eq(converted.name, &quot;xn--mnchen-3ya.example&quot;)
+  assert_eq(converted.is_ok(), true)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-idna-to-unicode"><summary><span class="pm">+</span><span class="decl">fn to_unicode(name : StringView, options~ : Options = options) -&gt; Outcome</span></summary><div class="desc"><div class="api-doc"><p>A name as Unicode, the form that is read (UTS 46 §4).</p></div></div></details>
+<h4 class="api-group">Values</h4>
+<details class="api-item" id="api-idna-options"><summary><span class="pm">+</span><span class="decl">let options : Options</span></summary><div class="desc"><div class="api-doc"><p>What a host name gets: no STD 3, no hyphen rule (an A-label always has a hyphen in the fourth position), the bidi and joiner rules on, and no DNS length check, which the resolver is better placed to make.</p></div></div></details>
+<details class="api-item" id="api-idna-strict"><summary><span class="pm">+</span><span class="decl">let strict : Options</span></summary><div class="desc"><div class="api-doc"><p>What a zone file gets: everything <code>options</code> turns off, turned on.</p></div></div></details>
+</div>
+<div class="pkg">
+<h3>moonurl/template <span class="tag">RFC 6570</span></h3>
+<p class="note">Holes named and filled: simple and reserved expansions, label, path and parameter operators, prefixes and exploded lists and pairs.</p>
+<h4 class="api-group">Types</h4>
+<details class="api-item" id="api-template-Refused" open><summary><span class="pm">+</span><span class="decl">suberror Refused</span><span class="badge">error</span></summary><div class="desc"><div class="api-doc"><p>Why a template cannot be read, or a value cannot be filled in.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>Bracket</code><span class="ty">at~ : Int32</span></dt><dd><p>A <code>{</code> that is never closed, or a <code>}</code> that opens nothing, at this offset.</p></dd><dt><code>Syntax</code><span class="ty">at~ : Int32, got~ : Char</span></dt><dd><p>A character that may not stand in a template where this one does.</p></dd><dt><code>Operator</code><span class="ty">at~ : Int32, got~ : Char</span></dt><dd><p>A reserved operator: <code>=</code>, <code>,</code>, <code>!</code>, <code>@</code> or <code>|</code> (RFC 6570 §2.2).</p></dd><dt><code>Length</code><span class="ty">at~ : Int32, limit~ : Int32, got~ : Int32</span></dt><dd><p>A <code>:N</code> prefix that is not one to four digits from 1 to 9999.</p></dd><dt><code>Composite</code><span class="ty">name~ : String</span></dt><dd><p>A <code>:N</code> prefix on a variable bound to a list or a map, where the standard says the modifier does not apply (RFC 6570 §2.4.1).</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-template-Refused-equal">equal</code>, <code id="api-template-Refused-not-equal">not_equal</code>, <code id="api-template-Refused-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-template-Template"><summary><span class="pm">+</span><span class="decl">struct Template</span><span class="badge">struct</span></summary><div class="desc"><div class="api-doc"><p>A template (RFC 6570 §2), kept as the pieces it was read into.</p></div></div></details>
+<p class="derived">Derived: <code id="api-template-Template-equal">equal</code>, <code id="api-template-Template-not-equal">not_equal</code>, <code id="api-template-Template-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-template-Template-capture"><summary><span class="pm">+</span><span class="decl">fn Template::capture(self : Template, uri : StringView) -&gt; Array[(String, String)]?</span></summary><div class="desc"><div class="api-doc"><p>The variables a URI spells out, in the order the template names them, or nothing if the URI is not one this template could have produced.</p>
+<p>A template is a pattern, not a grammar: a value that holds the separator is read as two values. Escapes are undone, so a name comes back as it was.</p>
+<pre class="eg"><code>test {
+  let template = @template.Template::decode(&quot;/users/{id}{?page}&quot;)
+  assert_eq(template.capture(&quot;/users/42?page=2&quot;).unwrap(), [
+    (&quot;id&quot;, &quot;42&quot;),
+    (&quot;page&quot;, &quot;2&quot;),
+  ])
+}</code></pre></div></div></details>
+<details class="api-item" id="api-template-Template-decode"><summary><span class="pm">+</span><span class="decl">fn Template::decode(text : StringView) -&gt; Template raise Refused</span></summary><div class="desc"><div class="api-doc"><p>Read a template (§2).</p>
+<pre class="eg"><code>test {
+  let template = @template.Template::decode(&quot;http://h{/list*}{?q,page}&quot;)
+  assert_eq(template.encode(), &quot;http://h{/list*}{?q,page}&quot;)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-template-Template-encode"><summary><span class="pm">+</span><span class="decl">fn Template::encode(self : Template) -&gt; String</span></summary><div class="desc"><div class="api-doc"><p>The template as it was written, the way §2 spells it.</p></div></div></details>
+<details class="api-item" id="api-template-Template-expand"><summary><span class="pm">+</span><span class="decl">fn[T : Variables] Template::expand(self : Template, variables : T) -&gt; String raise Refused</span></summary><div class="desc"><div class="api-doc"><p>Fill the template in (§3.2).</p>
+<pre class="eg"><code>test {
+  let values : Map[String, @template.Value] = Map([])
+  values.set(&quot;who&quot;, @template.Value::Text(&quot;moon&quot;))
+  values.set(&quot;list&quot;, @template.Value::List([&quot;a&quot;, &quot;b&quot;]))
+  let template = @template.Template::decode(&quot;{/who}{?list}&quot;)
+  assert_eq(template.expand(values), &quot;/moon?list=a,b&quot;)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-template-Value"><summary><span class="pm">+</span><span class="decl">enum Value</span><span class="badge">enum</span></summary><div class="desc"><div class="api-doc"><p>What a variable holds (RFC 6570 §2.3): one string, a list of them, or a set of named ones.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>Text</code><span class="ty">String</span></dt><dd><p>A string.</p></dd><dt><code>List</code><span class="ty">Array[String]</span></dt><dd><p>A list, whose items are expanded in order.</p></dd><dt><code>Pairs</code><span class="ty">Array[(String, String)]</span></dt><dd><p>An associative array: names with values, expanded in order.</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-template-Value-equal">equal</code>, <code id="api-template-Value-not-equal">not_equal</code>, <code id="api-template-Value-to-repr">to_repr</code>.</p>
+<h4 class="api-group">Traits</h4>
+<details class="api-item" id="api-template-Variables"><summary><span class="pm">+</span><span class="decl">trait Variables</span><span class="badge">trait</span></summary><div class="desc"><div class="api-doc"><pre class="eg"><code>trait Variables {
+  fn get(Self, StringView) -&gt; Value?
+}</code></pre></div><div class="api-doc"><p>Where the values of a template come from. Implement it for whatever holds them — a map, a configuration record, a request&#x27;s query.</p>
+<pre class="eg"><code>test {
+  let values : Map[String, @template.Value] = Map([])
+  values.set(&quot;q&quot;, @template.Value::Text(&quot;moon bit&quot;))
+  assert_eq(
+    @template.Template::decode(&quot;?q={q}&quot;).expand(values),
+    &quot;?q=moon%20bit&quot;,
+  )
+}</code></pre></div></div></details>
+<details class="api-item" id="api-template-impl-Variables-for-Map-String-Value"><summary><span class="pm">+</span><span class="decl">impl Variables for Map[String, Value]</span><span class="badge">impl</span></summary><div class="desc"><div class="api-doc"><p>A map of names to values is the obvious place to look.</p></div></div></details>
+</div>
+<div class="pkg">
+<h3>moonurl/dataurl <span class="tag">RFC 2397</span></h3>
+<p class="note">A whole representation written inside the reference to it.</p>
+<h4 class="api-group">Types</h4>
+<details class="api-item" id="api-dataurl-Refused" open><summary><span class="pm">+</span><span class="decl">suberror Refused</span><span class="badge">error</span></summary><div class="desc"><div class="api-doc"><p>Why a string is not a data URL.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>Scheme</code></dt><dd><p>It does not begin with <code>data:</code>.</p></dd><dt><code>Comma</code></dt><dd><p>Nothing separates the header from the payload (§3 requires a comma).</p></dd><dt><code>Escape</code><span class="ty">at~ : Int32</span></dt><dd><p>A <code>%</code> with fewer than two hex digits after it. Only under <code>strict</code>.</p></dd><dt><code>Base64</code><span class="ty">at~ : Int32</span></dt><dd><p>The payload is not base64, at this offset into it.</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-dataurl-Refused-equal">equal</code>, <code id="api-dataurl-Refused-not-equal">not_equal</code>, <code id="api-dataurl-Refused-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-dataurl-Url"><summary><span class="pm">+</span><span class="decl">struct Url</span><span class="badge">struct</span></summary><div class="desc"><div class="api-doc"><p>A data URL taken apart: what the octets are, and the octets (RFC 2397 §3).</p>
+<p><code>data</code> is already decoded. Which of the two spellings the URL used is a property of the text, not of what it carries.</p></div><div class="api-doc"><dl class="api-fields"><dt><code>kind</code><span class="ty">String</span></dt><dd><p>The media type with its parameters, as the URL spells it.</p></dd><dt><code>data</code><span class="ty">Bytes</span></dt><dd><p>The payload.</p></dd></dl></div></div></details>
+<p class="derived">Derived: <code id="api-dataurl-Url-equal">equal</code>, <code id="api-dataurl-Url-not-equal">not_equal</code>, <code id="api-dataurl-Url-to-repr">to_repr</code>.</p>
+<details class="api-item" id="api-dataurl-Url-charset"><summary><span class="pm">+</span><span class="decl">fn Url::charset(self : Url) -&gt; String</span></summary><div class="desc"><div class="api-doc"><p>The charset the payload&#x27;s text is in (RFC 2397 §2).</p>
+<p><code>US-ASCII</code> when nothing says otherwise, which is the default media type&#x27;s own parameter rather than a guess of ours.</p></div></div></details>
+<details class="api-item" id="api-dataurl-Url-decode"><summary><span class="pm">+</span><span class="decl">fn Url::decode(text : StringView, strict~ : Bool = false) -&gt; Url raise Refused</span></summary><div class="desc"><div class="api-doc"><p>Read a data URL.</p>
+<p><code>strict</code> turns the two things browsers let pass into errors: base64 with whitespace or the wrong padding, and a <code>%</code> that is not an escape. Left off, a lone <code>%</code> stands for itself and whitespace is dropped.</p>
+<pre class="eg"><code>test {
+  let greeting = @dataurl.Url::decode(&quot;data:text/plain,Hi%20there&quot;)
+  assert_eq(greeting.kind, &quot;text/plain&quot;)
+  assert_eq(greeting.data, b&quot;Hi there&quot;)
+  assert_eq(greeting.encode(base64=true), &quot;data:text/plain;base64,SGkgdGhlcmU=&quot;)
+}</code></pre></div></div></details>
+<details class="api-item" id="api-dataurl-Url-encode"><summary><span class="pm">+</span><span class="decl">fn Url::encode(self : Url, base64~ : Bool = true) -&gt; String</span></summary><div class="desc"><div class="api-doc"><p>Write the URL out.</p>
+<p><code>base64</code> defaults on, as webpack&#x27;s asset modules do (<code>generator.dataUrl.encoding</code>). Turn it off for SVG and anything else a human may want to read in the URL.</p>
+<p>A media type equal to <code>kind</code> is left out; reading one back puts it there again.</p></div></div></details>
+<details class="api-item" id="api-dataurl-Url-new"><summary><span class="pm">+</span><span class="decl">fn Url::new(data : Bytes, kind~ : String = kind) -&gt; Url</span></summary><div class="desc"><div class="api-doc"><p>A data URL carrying these octets.</p></div></div></details>
+<h4 class="api-group">Values</h4>
+<details class="api-item" id="api-dataurl-kind"><summary><span class="pm">+</span><span class="decl">let kind : String</span></summary><div class="desc"><div class="api-doc"><p>What a data URL means when it names no media type (RFC 2397 §2).</p></div></div></details>
+</div>
+<!-- api:end -->
 
           <div class="foot">
             <span>Errors are one enum per package — <code>Refused</code> — with an offset named <code>at</code>, or the variable's name where a prefix is one a list or a map cannot take.</span>

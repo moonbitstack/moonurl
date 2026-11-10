@@ -66,6 +66,15 @@ jobs:
         run: |
           moon info --target all && git diff --exit-code
 
+      # The reference is written by a script from the interface files and the
+      # `///` comments, so an item that changed without the page following it
+      # fails here rather than shipping a page that describes an older library.
+      - name: the API reference is current
+        if: runner.os == 'Linux'
+        run: |
+          python3 scripts/gen_api.py
+          git diff --exit-code docs/index.html
+
       - name: the skills are valid
         if: runner.os == 'Linux'
         run: |
