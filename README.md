@@ -202,7 +202,7 @@ data, and the UTS 46 conformance rows.
 | Vector | Rows |
 |:--|--:|
 | RFC 6570 `uritemplate-test` | 270 |
-| `urltestdata.json` | 896 |
+| `urltestdata.json` | 899 |
 | `setters_tests.json` | 278 |
 | `toascii.json` | 87 |
 | `IdnaTestV2.txt` | 6389 |
