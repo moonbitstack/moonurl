@@ -208,10 +208,13 @@ variable's name where a prefix is one a list or a map cannot take.
 
 The result is what the standards' own vectors ask for: every row of RFC 6570's
 own test corpus, every row of the URL Standard's parsing, setter, host-name and
-form-body sort data, and the UTS 46 conformance rows.
+form-body sort data, and the UTS 46 conformance rows. Two mature implementations
+are asked the same questions, so a difference is a test rather than a report
+from a user: Node's `new URL` for the browser reading, and Python's
+`urllib.parse` for RFC 3986. Nothing in any of these tables is skipped.
 
 <!-- conformance:start -->
-| Vector | Rows |
+| Suite | Rows |
 |:--|--:|
 | RFC 6570 `uritemplate-test` | 270 |
 | `urltestdata.json` | 899 |
@@ -219,7 +222,35 @@ form-body sort data, and the UTS 46 conformance rows.
 | `urlsearchparams-sort.any.js` | 8 |
 | `toascii.json` | 87 |
 | `IdnaTestV2.txt` | 6389 |
+
+| Differential | Rows |
+|:--|--:|
+| Node `new URL`, parsing | 312 |
+| Node `new URL`, setters | 38 |
+| Node `URLSearchParams` | 24 |
+| Node host parsing | 32 |
+| Python `urljoin` | 405 |
+| Python `urlsplit` | 27 |
+| Python `quote`, every component | 896 |
 <!-- conformance:end -->
+
+Five answers differ from one of the two, and each is taken from the
+specification rather than from the implementation that disagrees:
+
+- `http:g` resolved against an `http` base is `http:g` (RFC 3986 §5.4.2); Python
+  reads it as a relative reference and answers `http://a/b/c/g`.
+- A reference that is nothing but `?` or `#` resolves to a URL with an empty
+  query or fragment, and the delimiter is written (`http://a/b?`); Python's
+  `urlsplit` cannot tell absent from empty, so `urljoin` drops it.
+- An empty reference takes its fragment from the reference, so the base's
+  fragment is not inherited (RFC 3986 §5.2.2); Python returns the base as it
+  stands.
+- A reference resolves against a base of any scheme, so `urn:isbn:x` and `g`
+  make `urn:g` (RFC 3986 §5.2.2); Python only resolves the schemes on its own
+  list and hands the reference back.
+- `xn--a` is a name that decodes to a disallowed code point: the mapping reports
+  it, and a browser's host parser still addresses it, as the URL Standard's
+  `toascii.json` records. Node refuses it at both layers.
 
 ## Limits
 

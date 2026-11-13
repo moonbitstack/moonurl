@@ -64,13 +64,15 @@ def numbers():
     idna = read("src/idna/vectors_test.mbt")
     template = read("src/template/vectors_test.mbt")
     query = read("src/query_sort_test.mbt")
+    node = read("src/vectors_node_test.mbt")
+    python = read("src/vectors_python_test.mbt")
     template_cases = re.search(r"// cases: (\d+)", template)
     if not template_cases:
         raise SystemExit("no case count in src/template/vectors_test.mbt")
     rows = 0
     for batch in re.findall(r"let\s+(uts46_\d+)\s*:", idna):
         rows += array_count(idna, batch)
-    return [
+    official = [
         ("RFC 6570 `uritemplate-test`", int(template_cases.group(1))),
         ("`urltestdata.json`", array_count(url, "url_cases")),
         ("`setters_tests.json`", array_count(url, "setter_cases")),
@@ -78,12 +80,34 @@ def numbers():
         ("`toascii.json`", array_count(host, "host_cases")),
         ("`IdnaTestV2.txt`", rows),
     ]
+    # The escape table is one row per component per code point of ASCII, so the
+    # count is the number of components times 128.
+    escapes = array_count(python, "python_kept") * 128
+    differential = [
+        ("Node `new URL`, parsing", array_count(node, "node_cases")),
+        ("Node `new URL`, setters", array_count(node, "node_settings")),
+        ("Node `URLSearchParams`", array_count(node, "node_queries")),
+        ("Node host parsing", array_count(node, "node_hosts")),
+        ("Python `urljoin`", array_count(python, "python_joins")),
+        ("Python `urlsplit`", array_count(python, "python_splits")),
+        ("Python `quote`, every component", escapes),
+    ]
+    return official, differential
+
+
+def table(title, rows):
+    lines = ["| %s | Rows |" % title, "|:--|--:|"]
+    for name, count in rows:
+        lines.append("| %s | %d |" % (name, count))
+    return lines
 
 
 def block(rows):
-    lines = [START, "| Vector | Rows |", "|:--|--:|"]
-    for name, count in rows:
-        lines.append("| %s | %d |" % (name, count))
+    official, differential = rows
+    lines = [START]
+    lines += table("Suite", official)
+    lines.append("")
+    lines += table("Differential", differential)
     lines.append(END)
     return "\n".join(lines)
 
