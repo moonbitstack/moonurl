@@ -29,8 +29,8 @@ keywords = [
 description = "URLs for MoonBit: WHATWG and RFC 3986 parsing, IDNA, URI templates, percent coding."
 
 import {
-  "moonbitstack/moonmime@0.2.4",
-  "moonbitstack/moonbase@0.4.4",
+  "moonbitstack/moonmime@0.3.0",
+  "moonbitstack/moonbase@0.5.0",
   "moonbitstack/moonucd@0.1.4",
 }
 
