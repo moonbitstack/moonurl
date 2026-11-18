@@ -224,7 +224,7 @@ pub fn normalize_escapes(text : StringView) -> String {
   let raw = @utf8.encode(text)
   // Escapes are rewritten octet by octet and every other octet is kept, so the
   // output is the input's UTF-8 with only ASCII changed, and decodes again.
-  let out = Buffer(size_hint=raw.length())
+  let out = Buffer(capacity=raw.length())
   let mut i = 0
   while i < raw.length() {
     if raw[i] == b'%' && i + 2 < raw.length() {
